@@ -1,0 +1,60 @@
+<svg
+  width="120"
+  height="120"
+  viewBox="0 0 120 120"
+  xmlns="http://www.w3.org/2000/svg"
+  class="w-16 h-16"
+>
+  <defs>
+    <linearGradient id="backgroundGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="120" height="120" fill="url(#backgroundGradient)" rx="8"/>
+  
+  <!-- STEENBERG text -->
+  <text x="60" y="25" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">
+    STEENBERG
+  </text>
+  
+  <!-- Table tennis paddles -->
+  <!-- Left paddle (blue) -->
+  <ellipse cx="40" cy="60" rx="18" ry="18" fill="#1e40af" stroke="#374151" stroke-width="1"/>
+  <pattern id="bluePattern" patternUnits="userSpaceOnUse" width="2" height="2">
+    <rect width="2" height="2" fill="#1e40af"/>
+    <circle cx="1" cy="1" r="0.3" fill="#3b82f6"/>
+  </pattern>
+  <ellipse cx="40" cy="60" rx="16" ry="16" fill="url(#bluePattern)"/>
+  
+  <!-- Right paddle (red) -->
+  <ellipse cx="80" cy="60" rx="18" ry="18" fill="#dc2626" stroke="#374151" stroke-width="1"/>
+  <pattern id="redPattern" patternUnits="userSpaceOnUse" width="2" height="2">
+    <rect width="2" height="2" fill="#dc2626"/>
+    <circle cx="1" cy="1" r="0.3" fill="#ef4444"/>
+  </pattern>
+  <ellipse cx="80" cy="60" rx="16" ry="16" fill="url(#redPattern)"/>
+  
+  <!-- Paddle handles -->
+  <rect x="35" y="75" width="10" height="15" fill="#d4a574" rx="2"/>
+  <rect x="75" y="75" width="10" height="15" fill="#d4a574" rx="2"/>
+  
+  <!-- Ball -->
+  <circle cx="60" cy="60" r="4" fill="white" stroke="#e5e7eb" stroke-width="0.5"/>
+  
+  <!-- Est 1963 text -->
+  <text x="35" y="100" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">
+    Est
+  </text>
+  <text x="85" y="100" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">
+    1963
+  </text>
+  
+  <!-- TTC text -->
+  <text x="60" y="115" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">
+    TTC
+  </text>
+</svg>
