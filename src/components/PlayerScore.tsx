@@ -23,13 +23,13 @@ export default function PlayerScore(props: PlayerScoreProps) {
     <div
       classList={{
         "ltr flex flex-col font-sports tracking-wider mt-20": true,
-        "border-r-2 border-black": props.showBorder,
+        "border-r-2 border-white": props.showBorder,
       }}
     >
       <div class="mb-8 w-full text-3xl font-medium tracking-wider text-center md:text-5xl xl:text-7xl">
         <div class="flex items-center justify-center gap-4">
           <span
-            class="px-8 pb-2 w-auto border-b-4 border-black"
+            class="px-8 pb-2 w-auto border-b-4 border-white"
             data-testid={`${props.testid}-name`}
           >
             {props.name}
@@ -69,7 +69,7 @@ export default function PlayerScore(props: PlayerScoreProps) {
             Games
           </div>
           <div
-            class="text-5xl leading-none md:text-7xl font-seven"
+            class="text-5xl leading-none md:text-9xl font-seven text-red-500"
             data-testid={`${props.testid}-games`}
           >
             {props.games}

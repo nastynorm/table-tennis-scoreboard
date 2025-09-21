@@ -120,13 +120,13 @@ export default function Game() {
     <div
       classList={{
         "min-h-screen h-auto": true,
-        "bg-blue-700": mode() === GameMode.Game,
+        "bg-black": mode() === GameMode.Game,
         "bg-red-700": mode() === GameMode.Correction,
-        "bg-green-700":
+        "bg-green-700": // Green for game completion states
           mode() === GameMode.GameOver ||
           mode() === GameMode.MatchOver ||
           mode() === GameMode.SwitchingSides,
-        "bg-yellow-500": mode() === GameMode.Setup,
+        "bg-blue-700": mode() === GameMode.Setup,
       }}
       id="main-content"
     >

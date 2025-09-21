@@ -19,30 +19,7 @@ import Layout from "../layouts/Layout.astro";
         Hopefully the scoreboard is pretty intuitive to use, but here's a little
         guidance just in case!
       </p>
-      <p>
-        If you have any problems or questions or feature suggestions not covered
-        below, the best thing to do is
-        <a
-          href="//github.com/rickh94/table-tennis-scoreboard/issues/new"
-          class="font-bold underline hover:underline-ofset-2"
-          target="_blank"
-          rel="noopener noreferrer">open an issue on github</a
-        >
-        or
-        <a
-          href="//rickhenry.dev/contact"
-          class="underline hover:underline-offset-2"
-          target="_blank"
-          rel="noopener noreferrer">send me a message</a
-        > on my main website. I'd also love to hear how people are using my little
-        site! You can also
-        <a
-          href="//github.com/rickh94/table-tennis-scoreboard"
-          class="underline hover:underline-offset-2"
-          target="_blank"
-          rel="noopener noreferrer">view and star the code</a
-        > on GitHub if you're interested.
-      </p>
+
       <div class="py-2 space-y-2">
         <h2 class="text-3xl font-bold text-white">Basics</h2>
         <p>
@@ -71,8 +48,8 @@ import Layout from "../layouts/Layout.astro";
             class="font-bold text-white"
             >wireless keyboard or presentation clicker</strong
           >
-          for much faster scoring. I built this so I could keep a wireless presentation
-          clicker in my pocket and keep score on my iPad on a nearby table. By default,
+          for much faster scoring. you could keep a wireless presentation
+          clicker nearby and keep score on a iPad on a nearby table. By default,
           it uses the <em class="italic text-white"
             >Left and Right Arrow Keys</em
           > for scoring and
@@ -107,8 +84,8 @@ import Layout from "../layouts/Layout.astro";
           clicking the <strong class="font-mono font-bold text-white uppercase"
             >Setup</strong
           > button at the bottom. Setup mode has a
-          <span class="px-1 text-black bg-yellow-500 rounded"
-            >yellow background.</span
+          <span class="px-1 text-white bg-blue-700 rounded"
+            >blue background.</span
           >
           Anything you set will be saved to your browser for the next time you use
           the scoreboard. You can click the <strong
@@ -118,8 +95,18 @@ import Layout from "../layouts/Layout.astro";
             class="font-mono font-bold text-white uppercase">Done</strong
           >
           button to go back to
-          <span class="px-1 text-white bg-blue-700 rounded">game mode.</span> Your
+          <span class="px-1 text-white bg-black rounded">game mode.</span> Your
           settings will save automatically.
+        </p>
+        <p>
+          <strong class="text-lg font-bold text-white border-b-2 border-white"
+            >Color Modes</strong
+          >
+          The scoreboard uses different background colors to help you understand what's happening:
+          <span class="px-1 text-white bg-black rounded">Black background</span> for normal gameplay,
+          <span class="px-1 text-white bg-blue-700 rounded">blue background</span> for setup mode,
+          <span class="px-1 text-white bg-red-700 rounded">red background</span> for correction mode,
+          and <span class="px-1 text-white bg-green-700 rounded">green background</span> when games end or matches complete.
         </p>
         <p>
           <strong class="text-lg font-bold text-white border-b-2 border-white"
