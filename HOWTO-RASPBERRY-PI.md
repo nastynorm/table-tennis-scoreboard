@@ -130,20 +130,31 @@ This comprehensive guide will walk you through setting up a portable table tenni
 
 ### Step 6: Configure Kiosk Mode
 
-1. **The deployment script already created the kiosk script, but you can verify:**
+The deployment script automatically configures a complete kiosk mode setup:
+
+1. **Kiosk Features Configured:**
+   - **True fullscreen mode** - No toolbars, address bar, or UI elements
+   - **Auto-login** - Pi boots directly to the scoreboard
+   - **Auto-restart** - Browser restarts if it crashes
+   - **Touch optimized** - Perfect for resistive touchscreen
+   - **Hidden cursor** - Cursor disappears after 1 second
+
+2. **Verify kiosk script:**
    ```bash
    cat /home/pi/start-kiosk.sh
    ```
 
-2. **Test kiosk mode:**
+3. **Check kiosk service status:**
+   ```bash
+   sudo systemctl status kiosk.service
+   ```
+
+4. **Manual kiosk start (for testing):**
    ```bash
    sudo systemctl start kiosk.service
    ```
 
-3. **Enable auto-start:**
-   ```bash
-   sudo systemctl enable kiosk.service
-   ```
+5. **Kiosk service is auto-enabled** - Will start automatically on boot
 
 ## 🔧 Advanced Configuration
 
@@ -269,6 +280,40 @@ sudo journalctl -u kiosk.service -f
 
 # Restart services
 sudo systemctl restart scoreboard.service
+sudo systemctl restart kiosk.service
+```
+
+### Kiosk Mode Issues
+
+**Problem:** Browser shows toolbars or address bar
+```bash
+# Check if kiosk script has correct flags
+cat /home/pi/start-kiosk.sh
+# Should include --kiosk --start-fullscreen flags
+
+# Restart kiosk service
+sudo systemctl restart kiosk.service
+```
+
+**Problem:** Kiosk mode not starting on boot
+```bash
+# Check auto-login configuration
+sudo systemctl status getty@tty1.service
+
+# Check if X11 auto-starts
+cat /home/pi/.bashrc | grep startx
+
+# Verify kiosk service is enabled
+sudo systemctl is-enabled kiosk.service
+```
+
+**Problem:** Browser crashes or shows error pages
+```bash
+# Check kiosk service logs
+sudo journalctl -u kiosk.service -f
+
+# Clear browser cache and restart
+sudo rm -rf /tmp/chromium-kiosk
 sudo systemctl restart kiosk.service
 ```
 

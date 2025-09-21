@@ -69,25 +69,53 @@ export DISPLAY=:0
 # Hide cursor after 1 second of inactivity
 unclutter -idle 1 &
 
-# Wait for network and service
-sleep 10
+# Wait for network and scoreboard service to be ready
+sleep 15
 
-# Start Chromium in kiosk mode
+# Kill any existing Chromium processes
+pkill -f chromium-browser
+
+# Wait a moment for cleanup
+sleep 2
+
+# Start Chromium in full kiosk mode (no toolbars, no UI elements)
 chromium-browser \
   --kiosk \
+  --start-fullscreen \
   --disable-infobars \
   --disable-session-crashed-bubble \
   --disable-restore-session-state \
   --disable-web-security \
-  --disable-features=TranslateUI \
+  --disable-features=TranslateUI,VizDisplayCompositor \
+  --disable-ipc-flooding-protection \
   --no-first-run \
   --fast \
   --fast-start \
   --disable-default-apps \
   --disable-pinch \
+  --disable-zoom \
+  --disable-scroll-bounce \
+  --disable-pull-to-refresh \
   --overscroll-history-navigation=0 \
   --touch-events=enabled \
   --enable-features=TouchpadAndWheelScrollLatching \
+  --disable-dev-shm-usage \
+  --no-sandbox \
+  --disable-gpu-sandbox \
+  --disable-software-rasterizer \
+  --disable-background-timer-throttling \
+  --disable-backgrounding-occluded-windows \
+  --disable-renderer-backgrounding \
+  --disable-field-trial-config \
+  --disable-back-forward-cache \
+  --disable-hang-monitor \
+  --disable-prompt-on-repost \
+  --disable-sync \
+  --disable-translate \
+  --hide-scrollbars \
+  --disable-logging \
+  --silent \
+  --user-data-dir=/tmp/chromium-kiosk \
   http://localhost:4321
 EOF
 
@@ -97,10 +125,25 @@ chmod +x /home/pi/start-kiosk.sh
 echo "🚀 Setting up autostart..."
 mkdir -p /home/pi/.config/lxsession/LXDE-pi
 tee /home/pi/.config/lxsession/LXDE-pi/autostart > /dev/null <<EOF
-@lxpanel --profile LXDE-pi
-@pcmanfm --desktop --profile LXDE-pi
+# Disable desktop components for kiosk mode
+# @lxpanel --profile LXDE-pi
+# @pcmanfm --desktop --profile LXDE-pi
 @xscreensaver -no-splash
-@/home/pi/start-kiosk.sh
+
+# Start kiosk mode via systemd service (more reliable)
+# The kiosk.service will handle starting the browser
+EOF
+
+# Also create a desktop autostart entry as backup
+mkdir -p /home/pi/.config/autostart
+tee /home/pi/.config/autostart/scoreboard-kiosk.desktop > /dev/null <<EOF
+[Desktop Entry]
+Type=Application
+Name=Table Tennis Scoreboard Kiosk
+Exec=/home/pi/start-kiosk.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
 EOF
 
 # Configure boot config for displays
@@ -130,11 +173,67 @@ over_voltage=0
 
 # Disable rainbow splash
 disable_splash=1
+
+# Boot optimization for kiosk mode
+boot_delay=0
+disable_overscan=1
+
+# Auto-login to desktop for kiosk mode
+EOF
+
+# Configure auto-login for kiosk mode
+echo "🔐 Configuring auto-login for kiosk mode..."
+sudo systemctl set-default graphical.target
+sudo systemctl enable getty@tty1.service
+
+# Configure auto-login
+sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
+sudo tee /etc/systemd/system/getty@tty1.service.d/autologin.conf > /dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin pi --noclear %I \$TERM
+EOF
+
+# Configure auto-start X11 for pi user
+echo "🖥️ Configuring auto-start X11..."
+tee -a /home/pi/.bashrc > /dev/null <<EOF
+
+# Auto-start X11 on login for kiosk mode
+if [ -z "\$DISPLAY" ] && [ "\$XDG_VTNR" = 1 ]; then
+    exec startx
+fi
+EOF
+
+# Create kiosk systemd service for reliable startup
+echo "🖥️ Creating kiosk systemd service..."
+sudo tee /etc/systemd/system/kiosk.service > /dev/null <<EOF
+[Unit]
+Description=Table Tennis Scoreboard Kiosk
+After=graphical-session.target
+Wants=graphical-session.target
+Requires=scoreboard.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+ExecStartPre=/bin/sleep 20
+ExecStart=/home/pi/start-kiosk.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical-session.target
 EOF
 
 # Enable services
 echo "⚙️ Enabling services..."
 sudo systemctl enable scoreboard.service
+sudo systemctl enable kiosk.service
 
 # Create power management script
 echo "🔋 Creating power management script..."
