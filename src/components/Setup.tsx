@@ -188,7 +188,7 @@ export default function Setup(props: SetupProps) {
               value={props.matchState.player1.name}
               data-testid="player1-name-input"
               id="player1Name"
-              class="py-2 px-4 w-full font-mono uppercase bg-white border-2 border-black focus:outline-none"
+              class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
             />
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function Setup(props: SetupProps) {
               data-testid="player2-name-input"
               id="player2Name"
               name="player2Name"
-              class="py-2 px-4 w-full font-mono uppercase bg-white border-2 border-black focus:outline-none"
+              class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
             />
           </div>
         </div>
