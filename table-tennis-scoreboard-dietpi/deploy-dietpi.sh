@@ -289,13 +289,62 @@ setup_application() {
     fi
     
     echo "Building application..."
-    if ! npm run build; then
-        echo -e "${RED}Build failed. Attempting to rebuild with clean cache...${NC}"
-        npm cache clean --force
-        npm run build || {
-            echo -e "${RED}Build failed after cache clean. Please check for build errors.${NC}"
-            exit 1
+    
+    # Detect ARM64 architecture and handle Rollup native module issues
+    ARCH=$(uname -m)
+    if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+        echo -e "${YELLOW}Detected ARM64 architecture. Applying ARM-specific build optimizations...${NC}"
+        
+        # Force reinstall Rollup with proper ARM64 support
+        echo "Reinstalling Rollup for ARM64 compatibility..."
+        npm uninstall rollup @rollup/rollup-linux-arm64-gnu 2>/dev/null || true
+        npm install rollup --no-optional --force
+        
+        # Install ARM64-specific Rollup binary if available
+        npm install @rollup/rollup-linux-arm64-gnu --save-optional --force 2>/dev/null || {
+            echo -e "${YELLOW}ARM64 Rollup binary not available, using fallback...${NC}"
         }
+    fi
+    
+    # Attempt build with ARM64 optimizations
+    if ! npm run build; then
+        echo -e "${YELLOW}Initial build failed. Trying ARM64-specific fixes...${NC}"
+        
+        if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+            # ARM64-specific fallback strategies
+            echo "Applying ARM64 build workarounds..."
+            
+            # Clear cache and reinstall with ARM64 optimizations
+            npm cache clean --force
+            rm -rf node_modules/.cache 2>/dev/null || true
+            
+            # Force rebuild native modules for ARM64
+            npm rebuild --force 2>/dev/null || true
+            
+            # Try build with reduced memory usage for Pi Zero 2W
+            echo "Attempting build with ARM64 optimizations..."
+            NODE_OPTIONS="--max-old-space-size=512" npm run build || {
+                echo -e "${YELLOW}Standard ARM64 build failed. Trying compatibility mode...${NC}"
+                
+                # Last resort: build without native optimizations
+                npm config set target_arch arm64
+                npm config set target_platform linux
+                npm config set cache /tmp/.npm
+                NODE_OPTIONS="--max-old-space-size=256" npm run build || {
+                    echo -e "${RED}All ARM64 build attempts failed. The system may need more memory or a different Node.js version.${NC}"
+                    echo -e "${YELLOW}Suggestion: Try building on a more powerful system and copy the dist folder.${NC}"
+                    exit 1
+                }
+            }
+        else
+            # Non-ARM64 fallback
+            echo -e "${RED}Build failed. Attempting to rebuild with clean cache...${NC}"
+            npm cache clean --force
+            npm run build || {
+                echo -e "${RED}Build failed after cache clean. Please check for build errors.${NC}"
+                exit 1
+            }
+        fi
     fi
     
     # Install serve package globally for serving static files
