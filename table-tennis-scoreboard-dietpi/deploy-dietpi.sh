@@ -268,13 +268,42 @@ setup_application() {
     
     # Install dependencies and build
     echo "Installing Node.js dependencies..."
-    npm install
+    
+    # Clear npm cache and remove any existing node_modules to prevent version conflicts
+    echo "Clearing npm cache and cleaning up existing installations..."
+    npm cache clean --force 2>/dev/null || true
+    rm -rf node_modules package-lock.json 2>/dev/null || true
+    
+    # Install dependencies with clean slate
+    echo "Installing fresh dependencies..."
+    if ! npm install --no-optional --legacy-peer-deps; then
+        echo -e "${YELLOW}Standard npm install failed, trying with force flag...${NC}"
+        if ! npm install --force --no-optional --legacy-peer-deps; then
+            echo -e "${RED}npm install failed. Trying alternative approach...${NC}"
+            # Try installing with specific Node.js version compatibility
+            npm install --no-optional --legacy-peer-deps --no-audit --no-fund || {
+                echo -e "${RED}All npm install attempts failed. Please check Node.js version compatibility.${NC}"
+                exit 1
+            }
+        fi
+    fi
     
     echo "Building application..."
-    npm run build
+    if ! npm run build; then
+        echo -e "${RED}Build failed. Attempting to rebuild with clean cache...${NC}"
+        npm cache clean --force
+        npm run build || {
+            echo -e "${RED}Build failed after cache clean. Please check for build errors.${NC}"
+            exit 1
+        }
+    fi
     
     # Install serve package globally for serving static files
-    npm install -g serve
+    echo "Installing serve package globally..."
+    npm install -g serve || {
+        echo -e "${YELLOW}Global serve install failed, trying with force...${NC}"
+        npm install -g serve --force
+    }
     
     echo -e "${GREEN}Application setup completed.${NC}"
 }
