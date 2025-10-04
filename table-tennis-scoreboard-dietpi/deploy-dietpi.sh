@@ -124,7 +124,21 @@ update_system() {
         wait_for_network
     fi
     
-    dietpi-update
+    # Try different methods to update DietPi
+    if command -v dietpi-update >/dev/null 2>&1; then
+        echo "Running dietpi-update..."
+        dietpi-update
+    elif [ -f /boot/dietpi/dietpi-update ]; then
+        echo "Running /boot/dietpi/dietpi-update..."
+        /boot/dietpi/dietpi-update
+    elif [ -f /DietPi/dietpi/dietpi-update ]; then
+        echo "Running /DietPi/dietpi/dietpi-update..."
+        /DietPi/dietpi/dietpi-update
+    else
+        echo -e "${YELLOW}dietpi-update not found, falling back to apt update...${NC}"
+        apt update && apt upgrade -y
+    fi
+    
     echo -e "${GREEN}System updated successfully.${NC}"
 }
 
@@ -132,17 +146,71 @@ update_system() {
 install_software() {
     echo -e "${BLUE}Installing required packages...${NC}"
     
-    # Install Node.js
-    echo "Installing Node.js..."
-    dietpi-software install 9
-    
-    # Install Chromium
-    echo "Installing Chromium..."
-    dietpi-software install 113
-    
-    # Install Git
-    echo "Installing Git..."
-    dietpi-software install 17
+    # Check if dietpi-software is available
+    if command -v dietpi-software >/dev/null 2>&1; then
+        echo "Using dietpi-software for installation..."
+        
+        # Install Node.js
+        echo "Installing Node.js..."
+        dietpi-software install 9
+        
+        # Install Chromium
+        echo "Installing Chromium..."
+        dietpi-software install 113
+        
+        # Install Git
+        echo "Installing Git..."
+        dietpi-software install 17
+        
+    elif [ -f /boot/dietpi/dietpi-software ]; then
+        echo "Using /boot/dietpi/dietpi-software for installation..."
+        
+        # Install Node.js
+        echo "Installing Node.js..."
+        /boot/dietpi/dietpi-software install 9
+        
+        # Install Chromium
+        echo "Installing Chromium..."
+        /boot/dietpi/dietpi-software install 113
+        
+        # Install Git
+        echo "Installing Git..."
+        /boot/dietpi/dietpi-software install 17
+        
+    elif [ -f /DietPi/dietpi/dietpi-software ]; then
+        echo "Using /DietPi/dietpi/dietpi-software for installation..."
+        
+        # Install Node.js
+        echo "Installing Node.js..."
+        /DietPi/dietpi/dietpi-software install 9
+        
+        # Install Chromium
+        echo "Installing Chromium..."
+        /DietPi/dietpi/dietpi-software install 113
+        
+        # Install Git
+        echo "Installing Git..."
+        /DietPi/dietpi/dietpi-software install 17
+        
+    else
+        echo -e "${YELLOW}dietpi-software not found, using apt for installation...${NC}"
+        
+        # Update package list
+        apt update
+        
+        # Install Node.js (using NodeSource repository)
+        echo "Installing Node.js..."
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+        apt install -y nodejs
+        
+        # Install Chromium
+        echo "Installing Chromium..."
+        apt install -y chromium-browser
+        
+        # Install Git
+        echo "Installing Git..."
+        apt install -y git
+    fi
     
     echo -e "${GREEN}All packages installed successfully.${NC}"
 }
