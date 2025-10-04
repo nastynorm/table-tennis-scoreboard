@@ -1,0 +1,54 @@
+# Waveshare 5" LCD Configuration Template for DietPi
+# Copy this configuration to /boot/config.txt
+
+# Basic system settings
+max_usb_current=1
+hdmi_force_hotplug=1
+
+# Waveshare 5" LCD Display Settings
+hdmi_group=2
+hdmi_mode=87
+hdmi_cvt=800 480 60 6 0 0 0
+hdmi_drive=1
+display_rotate=0
+
+# Pi Zero 2W Memory Optimizations
+gpu_mem=64
+force_turbo=0
+cma=64
+
+# Audio (disabled for kiosk)
+dtparam=audio=off
+
+# Camera (disabled for performance)
+camera_auto_detect=0
+display_auto_detect=0
+
+# Disable conflicting display drivers
+# Comment out these lines if present:
+#dtoverlay=vc4-kms-v3d
+#dtoverlay=vc4-fkms-v3d
+
+# Optional: Touch screen calibration
+# Uncomment and adjust if touch is not accurate
+#dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=1,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900
+
+# Optional: Display rotation
+# Uncomment one of these for different orientations:
+#display_rotate=1  # 90 degrees clockwise
+#display_rotate=2  # 180 degrees
+#display_rotate=3  # 270 degrees clockwise
+
+# Optional: Overscan adjustment
+# Uncomment and adjust if display has black borders:
+#overscan_left=0
+#overscan_right=0
+#overscan_top=0
+#overscan_bottom=0
+
+# Performance tuning for Pi Zero 2W
+# Uncomment for additional performance (may increase power consumption):
+#arm_freq=1000
+#core_freq=500
+#sdram_freq=500
+#over_voltage=2

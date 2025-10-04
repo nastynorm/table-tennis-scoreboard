@@ -1,0 +1,43 @@
+{
+  "name": "Table Tennis Scoreboard",
+  "uri": "https://your-scoreboard-url.com",
+  "duration": "86400",
+  "mimetype": "webpage",
+  "is_enabled": 1,
+  "nocache": 0,
+  "play_order": 0,
+  "skip_asset_check": 0,
+  "start_date": "",
+  "end_date": "",
+  "is_processing": 0,
+  "asset_id": "",
+  "headers": {
+    "User-Agent": "Anthias/Screenly OSE"
+  },
+  "metadata": {
+    "description": "Table Tennis Scoreboard Application",
+    "tags": ["scoreboard", "table-tennis", "sports"],
+    "refresh_interval": 300,
+    "timeout": 30
+  },
+  "display_settings": {
+    "zoom_level": 1.0,
+    "disable_scrollbars": true,
+    "hide_cursor": true,
+    "disable_context_menu": true,
+    "disable_text_selection": true,
+    "force_refresh": false
+  },
+  "network_settings": {
+    "retry_attempts": 3,
+    "retry_delay": 5,
+    "connection_timeout": 30,
+    "read_timeout": 60
+  },
+  "performance_settings": {
+    "preload": true,
+    "cache_duration": 3600,
+    "memory_limit": "128M",
+    "cpu_limit": 80
+  }
+}
