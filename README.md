@@ -9,48 +9,22 @@ and is hosted on [Netlify](https://www.netlify.com/).
 Go [have a play](https://tabletennisscoreboard.com) or [read
 about the functionality](https://tabletennisscoreboard.com/help).
 
-## Kiosk Display Deployments
+## Kiosk Display Deployment
 
-This repository includes specialized deployment configurations for running the scoreboard on dedicated kiosk displays, optimized for Raspberry Pi Zero 2W with Waveshare 5" LCD displays:
+This repository includes a specialized deployment configuration for running the scoreboard on dedicated kiosk displays, optimized for Raspberry Pi Zero 2W with Waveshare 5" LCD displays:
 
 ### 🖥️ [DietPi Deployment](./table-tennis-scoreboard-dietpi/)
-**Best for: Full control and customization**
+**Complete local hosting solution**
 - Lightweight Debian-based OS
-- Complete local hosting solution
+- Full control and customization
 - SSH access and command-line management
 - Optimized for Pi Zero 2W performance
 - Includes automated deployment script
-
-### 📺 [FullPageOS Deployment](./table-tennis-scoreboard-fullpageos/)
-**Best for: Simple, stable kiosk displays**
-- Minimal OS designed for single web page display
-- Boots directly to browser in kiosk mode
-- Requires external hosting of scoreboard application
-- Simplest setup and maintenance
-- File-based configuration
-
-### 🎯 [Anthias (Screenly OSE) Deployment](./table-tennis-scoreboard-anthias/)
-**Best for: Professional digital signage**
-- Web-based management interface
-- Remote content management and scheduling
-- API for automation and integration
-- Multi-display support
-- Professional digital signage features
-
-### Quick Comparison
-
-| Feature | DietPi | FullPageOS | Anthias |
-|---------|---------|------------|---------|
-| **Setup Complexity** | Medium | Simple | Medium |
-| **Local Hosting** | ✅ Yes | ❌ No | ❌ No |
-| **Remote Management** | ❌ SSH only | ❌ Limited | ✅ Web + API |
-| **Resource Usage** | Low | Lowest | Medium |
-| **Boot Time** | ~30s | ~45s | ~60s |
-| **Best For** | Developers | Simple displays | Enterprise |
+- Self-contained with no external dependencies
 
 ### Hardware Requirements
 
-All deployments are optimized for:
+The DietPi deployment is optimized for:
 - **Raspberry Pi Zero 2W** (recommended)
 - **Waveshare 5" LCD Display** (800x480)
 - **8GB+ MicroSD Card** (Class 10)
@@ -58,11 +32,11 @@ All deployments are optimized for:
 
 ### Getting Started
 
-1. **Choose your deployment option** based on your needs
-2. **Follow the specific README** in each deployment directory
-3. **Use the deployment selector script** (coming soon) for guided setup
+1. **Follow the setup guide** in the [DietPi deployment directory](./table-tennis-scoreboard-dietpi/)
+2. **Use the provided configuration templates** for quick setup
+3. **Run the automated deployment script** for easy installation
 
-Each deployment directory contains:
+The deployment directory contains:
 - 📖 Comprehensive setup guide
 - ⚙️ Configuration templates
 - 🔧 Management scripts
@@ -101,8 +75,6 @@ The built files will be in the `_site` directory, ready for deployment to any st
 │   ├── assets/           # CSS, JS, and other assets
 │   └── *.md              # Content pages
 ├── table-tennis-scoreboard-dietpi/     # DietPi deployment
-├── table-tennis-scoreboard-fullpageos/ # FullPageOS deployment
-├── table-tennis-scoreboard-anthias/    # Anthias deployment
 ├── .eleventy.js          # Eleventy configuration
 ├── tailwind.config.js    # Tailwind CSS configuration
 └── package.json          # Dependencies and scripts
@@ -123,7 +95,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 - 🐛 Bug fixes and improvements
 - 🎨 UI/UX enhancements
-- 🖥️ Additional kiosk OS support
+- 🖥️ DietPi deployment enhancements
 - 📱 Mobile responsiveness improvements
 - 🌐 Internationalization
 - 📊 Analytics and statistics features

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Migration Script for Table Tennis Scoreboard to Kiosk OS
-# Supports migration to DietPi, FullPageOS, and Anthias (Screenly OSE)
+# Migration Script for Table Tennis Scoreboard to DietPi Kiosk
+# Prepares the built application for deployment on DietPi
 
 set -e
 
@@ -17,7 +17,7 @@ SCOREBOARD_DIR="$(pwd)"
 BUILD_DIR="${SCOREBOARD_DIR}/dist"
 BACKUP_DIR="${HOME}/scoreboard-backup-$(date +%Y%m%d-%H%M%S)"
 
-echo -e "${BLUE}=== Table Tennis Scoreboard Kiosk OS Migration Tool ===${NC}"
+echo -e "${BLUE}=== Table Tennis Scoreboard DietPi Migration Tool ===${NC}"
 echo ""
 
 # Check if we're in the right directory
@@ -29,12 +29,10 @@ fi
 
 # Function to display menu
 show_menu() {
-    echo -e "${YELLOW}Choose your migration target:${NC}"
-    echo "1) DietPi (Recommended for Pi Zero 2W)"
-    echo "2) FullPageOS (Simplest setup)"
-    echo "3) Anthias/Screenly OSE (Digital signage features)"
-    echo "4) Create portable server package"
-    echo "5) Exit"
+    echo -e "${YELLOW}Choose your migration option:${NC}"
+    echo "1) Create DietPi deployment package"
+    echo "2) Create portable server package"
+    echo "3) Exit"
     echo ""
 }
 
@@ -135,208 +133,6 @@ EOF
     echo -e "${YELLOW}Follow the instructions in $DIETPI_DIR/README.md${NC}"
 }
 
-# Function to migrate to FullPageOS
-migrate_to_fullpageos() {
-    echo -e "${BLUE}Preparing migration to FullPageOS...${NC}"
-    
-    # Create FullPageOS deployment package
-    FULLPAGEOS_DIR="${HOME}/fullpageos-scoreboard-deployment"
-    mkdir -p "$FULLPAGEOS_DIR"
-    
-    # Copy built application
-    cp -r "$BUILD_DIR" "$FULLPAGEOS_DIR/scoreboard-app"
-    
-    # Create server setup script
-    cat > "$FULLPAGEOS_DIR/setup-server.sh" << 'EOF'
-#!/bin/bash
-
-# FullPageOS requires an external server to host the application
-# This script sets up a simple HTTP server
-
-echo "=== Setting up Scoreboard Server for FullPageOS ==="
-
-# Install Node.js if not present
-if ! command -v node &> /dev/null; then
-    echo "Installing Node.js..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt-get install -y nodejs
-fi
-
-# Install serve package
-npm install -g serve
-
-# Create systemd service
-sudo tee /etc/systemd/system/scoreboard-server.service > /dev/null << 'SERVICE_EOF'
-[Unit]
-Description=Table Tennis Scoreboard Server
-After=network.target
-
-[Service]
-Type=simple
-User=pi
-WorkingDirectory=/home/pi/scoreboard-app
-ExecStart=/usr/local/bin/serve . -l 3000
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-SERVICE_EOF
-
-# Enable and start service
-sudo systemctl enable scoreboard-server
-sudo systemctl start scoreboard-server
-
-echo "Server setup complete!"
-echo "Scoreboard available at: http://$(hostname -I | awk '{print $1}'):3000"
-EOF
-    
-    chmod +x "$FULLPAGEOS_DIR/setup-server.sh"
-    
-    # Create FullPageOS configuration
-    cat > "$FULLPAGEOS_DIR/fullpageos-config.txt" << 'EOF'
-# FullPageOS Configuration for Table Tennis Scoreboard
-# Copy this content to fullpageos.txt on the FullPageOS SD card
-
-# Replace [SERVER_IP] with your server's IP address
-fullpageos_url=http://[SERVER_IP]:3000
-
-# Optimized settings for Pi Zero 2W
-fullpageos_hide_cursor=true
-fullpageos_chromium_flags=--kiosk --no-sandbox --disable-gpu --disable-infobars --window-size=800,480 --window-position=0,0 --force-device-scale-factor=1 --disk-cache-dir=/dev/null
-EOF
-    
-    # Create instructions
-    cat > "$FULLPAGEOS_DIR/README.md" << 'EOF'
-# FullPageOS Deployment Instructions
-
-FullPageOS requires the scoreboard to be hosted on an external server.
-
-## Option 1: Use a separate Raspberry Pi as server
-
-1. Copy the scoreboard-app directory to a Raspberry Pi:
-   ```
-   scp -r scoreboard-app/ pi@[SERVER_PI_IP]:/home/pi/
-   ```
-
-2. Run the server setup script:
-   ```
-   ssh pi@[SERVER_PI_IP]
-   cd /home/pi
-   ./setup-server.sh
-   ```
-
-3. Note the server IP address displayed
-
-## Option 2: Use a cloud service
-
-1. Deploy the contents of scoreboard-app/ to:
-   - Netlify (drag and drop the folder)
-   - Vercel (connect to your Git repository)
-   - GitHub Pages
-   - Any web hosting service
-
-## Configure FullPageOS
-
-1. Flash FullPageOS to an SD card
-2. Edit fullpageos.txt on the SD card
-3. Copy the content from fullpageos-config.txt
-4. Replace [SERVER_IP] with your actual server IP
-5. Insert SD card and boot FullPageOS
-
-The scoreboard will automatically display in kiosk mode.
-EOF
-    
-    echo -e "${GREEN}FullPageOS deployment package created at: $FULLPAGEOS_DIR${NC}"
-    echo -e "${YELLOW}Follow the instructions in $FULLPAGEOS_DIR/README.md${NC}"
-}
-
-# Function to migrate to Anthias
-migrate_to_anthias() {
-    echo -e "${BLUE}Preparing migration to Anthias (Screenly OSE)...${NC}"
-    
-    # Create Anthias deployment package
-    ANTHIAS_DIR="${HOME}/anthias-scoreboard-deployment"
-    mkdir -p "$ANTHIAS_DIR"
-    
-    # Copy built application
-    cp -r "$BUILD_DIR" "$ANTHIAS_DIR/scoreboard-app"
-    
-    # Create deployment script
-    cat > "$ANTHIAS_DIR/deploy-to-anthias.sh" << 'EOF'
-#!/bin/bash
-
-# Anthias Scoreboard Deployment Script
-set -e
-
-echo "=== Deploying Scoreboard to Anthias ==="
-
-# Install nginx to serve the application
-sudo apt-get update
-sudo apt-get install -y nginx
-
-# Copy scoreboard files to nginx directory
-sudo cp -r scoreboard-app/* /var/www/html/
-
-# Configure nginx for the scoreboard
-sudo tee /etc/nginx/sites-available/scoreboard > /dev/null << 'NGINX_EOF'
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    
-    root /var/www/html;
-    index index.html;
-    
-    server_name _;
-    
-    location / {
-        try_files $uri $uri/ =404;
-    }
-}
-NGINX_EOF
-
-# Enable the site
-sudo ln -sf /etc/nginx/sites-available/scoreboard /etc/nginx/sites-enabled/default
-sudo systemctl restart nginx
-
-echo "Scoreboard deployed to nginx!"
-echo "Add this URL to Anthias: http://$(hostname -I | awk '{print $1}')"
-EOF
-    
-    chmod +x "$ANTHIAS_DIR/deploy-to-anthias.sh"
-    
-    # Create instructions
-    cat > "$ANTHIAS_DIR/README.md" << 'EOF'
-# Anthias (Screenly OSE) Deployment Instructions
-
-1. Install Anthias on your Raspberry Pi following the official guide
-2. Copy this deployment package to your Anthias system:
-   ```
-   scp -r anthias-scoreboard-deployment/ pi@[ANTHIAS_IP]:/home/pi/
-   ```
-
-3. SSH into your Anthias system:
-   ```
-   ssh pi@[ANTHIAS_IP]
-   ```
-
-4. Run the deployment script:
-   ```
-   cd /home/pi/anthias-scoreboard-deployment
-   ./deploy-to-anthias.sh
-   ```
-
-5. Access the Anthias web interface at http://[ANTHIAS_IP]:8080
-
-6. Add a new asset with the URL: http://[ANTHIAS_IP]
-
-7. Set the duration and schedule as needed
-
-The scoreboard will be displayed according to your Anthias playlist schedule.
-EOF
-    
-    echo -e "${GREEN}Anthias deployment package created at: $ANTHIAS_DIR${NC}"
-    echo -e "${YELLOW}Follow the instructions in $ANTHIAS_DIR/README.md${NC}"
-}
 
 # Function to create portable server package
 create_portable_package() {
@@ -458,7 +254,7 @@ EOF
 # Main menu loop
 while true; do
     show_menu
-    read -p "Enter your choice (1-5): " choice
+    read -p "Enter your choice (1-3): " choice
     
     case $choice in
         1)
@@ -468,25 +264,15 @@ while true; do
             ;;
         2)
             create_backup
-            migrate_to_fullpageos
-            break
-            ;;
-        3)
-            create_backup
-            migrate_to_anthias
-            break
-            ;;
-        4)
-            create_backup
             create_portable_package
             break
             ;;
-        5)
+        3)
             echo -e "${BLUE}Migration cancelled.${NC}"
             exit 0
             ;;
         *)
-            echo -e "${RED}Invalid choice. Please enter 1-5.${NC}"
+            echo -e "${RED}Invalid choice. Please enter 1-3.${NC}"
             ;;
     esac
 done
@@ -494,12 +280,12 @@ done
 echo ""
 echo -e "${GREEN}=== Migration Preparation Complete! ===${NC}"
 echo ""
-echo -e "${YELLOW}Benefits of migrating to kiosk OS:${NC}"
+echo -e "${YELLOW}Benefits of migrating to DietPi kiosk:${NC}"
 echo "• Faster boot times (20-30 seconds vs 90 seconds)"
 echo "• Lower memory usage (100-150MB vs 300MB)"
 echo "• Simplified maintenance"
 echo "• Better stability for kiosk applications"
-echo "• Reduced complexity (50 lines vs 876 lines)"
+echo "• Complete local hosting solution"
 echo ""
 echo -e "${BLUE}Your original application backup is saved at: $BACKUP_DIR${NC}"
 echo ""

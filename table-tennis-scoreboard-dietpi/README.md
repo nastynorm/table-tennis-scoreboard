@@ -80,9 +80,10 @@ table-tennis-scoreboard-dietpi/
 │   ├── config.txt.template    # Boot configuration template
 │   └── autostart.conf         # DietPi autostart configuration
 ├── scripts/
-│   ├── start-scoreboard.sh    # Kiosk startup script
-│   ├── fix-display.sh         # Display troubleshooting
-│   └── manage-scoreboard.sh   # Service management
+│   ├── wifi-setup/            # WiFi configuration scripts
+│   ├── network-diagnostics/   # Network troubleshooting tools
+│   ├── scoreboard-management/ # Scoreboard service management
+│   └── README.md              # Scripts documentation
 └── systemd/
     └── scoreboard-kiosk.service # Systemd service file
 ```
@@ -122,11 +123,11 @@ After deployment, use these commands to manage the scoreboard:
 
 ```bash
 # Service management
-./manage-scoreboard.sh start     # Start the service
-./manage-scoreboard.sh stop      # Stop the service
-./manage-scoreboard.sh restart   # Restart the service
-./manage-scoreboard.sh status    # Check service status
-./manage-scoreboard.sh logs      # View live logs
+./scripts/scoreboard-management/manage-scoreboard.sh start     # Start the service
+./scripts/scoreboard-management/manage-scoreboard.sh stop      # Stop the service
+./scripts/scoreboard-management/manage-scoreboard.sh restart   # Restart the service
+./scripts/scoreboard-management/manage-scoreboard.sh status    # Check service status
+./scripts/scoreboard-management/manage-scoreboard.sh logs      # View live logs
 
 # System commands
 systemctl status scoreboard-kiosk    # Check service status
@@ -204,6 +205,148 @@ sudo systemctl restart networking
 dietpi-config
 ```
 
+### Static IP Configuration
+
+Setting up a static IP address ensures your Pi always has the same IP address on your network, making it easier to access consistently.
+
+#### Method 1: Using DietPi-Config (Recommended)
+
+1. **Access DietPi-Config**:
+   ```bash
+   sudo dietpi-config
+   ```
+
+2. **Navigate to Network Options**:
+   - Select `Network Options: Adapters`
+   - Choose `WiFi` or `Ethernet` depending on your connection
+   - Select `Change Mode`
+   - Choose `Static`
+
+3. **Configure Static IP Settings**:
+   - **IP Address**: Enter your desired static IP (e.g., `192.168.1.100`)
+   - **Subnet Mask**: Usually `255.255.255.0` or `24`
+   - **Gateway**: Your router's IP address (e.g., `192.168.1.1`)
+   - **DNS**: Primary DNS server (e.g., `8.8.8.8` or your router's IP)
+
+4. **Apply and Restart**:
+   - Select `Apply` to save changes
+   - Restart networking: `sudo systemctl restart networking`
+   - Or reboot: `sudo reboot`
+
+#### Method 2: Manual Configuration via dhcpcd.conf
+
+1. **Edit the dhcpcd configuration file**:
+   ```bash
+   sudo nano /etc/dhcpcd.conf
+   ```
+
+2. **Add static IP configuration** (add to the end of the file):
+   ```bash
+   # Static IP configuration for wlan0 (WiFi)
+   interface wlan0
+   static ip_address=192.168.88.100/24
+   static routers=192.168.88.1
+   static domain_name_servers=8.8.8.8 8.8.4.4
+   
+   # For other common networks:
+   # 192.168.1.x network:
+   # static ip_address=192.168.1.100/24
+   # static routers=192.168.1.1
+   
+   # For Ethernet (eth0), use this instead:
+   # interface eth0
+   # static ip_address=192.168.88.100/24
+   # static routers=192.168.88.1
+   # static domain_name_servers=8.8.8.8 8.8.4.4
+   ```
+
+3. **Save and restart networking**:
+   ```bash
+   # Save file (Ctrl+X, then Y, then Enter)
+   sudo systemctl restart dhcpcd
+   sudo systemctl restart networking
+   ```
+
+#### Method 3: Using NetworkManager (Alternative)
+
+If your DietPi uses NetworkManager:
+
+```bash
+# List available connections
+sudo nmcli connection show
+
+# Modify WiFi connection for static IP
+sudo nmcli connection modify "YourWiFiName" ipv4.addresses 192.168.1.100/24
+sudo nmcli connection modify "YourWiFiName" ipv4.gateway 192.168.1.1
+sudo nmcli connection modify "YourWiFiName" ipv4.dns "8.8.8.8,8.8.4.4"
+sudo nmcli connection modify "YourWiFiName" ipv4.method manual
+
+# Restart the connection
+sudo nmcli connection down "YourWiFiName"
+sudo nmcli connection up "YourWiFiName"
+```
+
+#### Important Notes
+
+- **Choose an IP outside DHCP range**: Check your router's DHCP range and pick an IP outside it
+- **Common IP ranges**:
+  - `192.168.1.x` (gateway usually `192.168.1.1`)
+  - `192.168.0.x` (gateway usually `192.168.0.1`)
+  - `192.168.88.x` (gateway usually `192.168.88.1`)
+  - `10.0.0.x` (gateway usually `10.0.0.1`)
+- **Find your network info**:
+  ```bash
+  # Current IP and gateway
+  ip route show default
+  
+  # Current network configuration
+  ip addr show
+  
+  # Router/gateway IP
+  route -n | grep '^0.0.0.0'
+  ```
+
+#### Troubleshooting Static IP Issues
+
+```bash
+# Check current IP configuration
+ip addr show wlan0
+
+# Check routing table
+ip route show
+
+# Test connectivity to gateway
+ping 192.168.1.1
+
+# Test DNS resolution
+nslookup google.com
+
+# Restart network services
+sudo systemctl restart dhcpcd
+sudo systemctl restart networking
+
+# Check dhcpcd status
+sudo systemctl status dhcpcd
+
+# View network logs
+sudo journalctl -u dhcpcd -f
+```
+
+#### Reverting to DHCP
+
+If you need to go back to automatic IP assignment:
+
+**Via DietPi-Config**:
+- Run `sudo dietpi-config`
+- Network Options → WiFi → Change Mode → DHCP
+
+**Via dhcpcd.conf**:
+```bash
+sudo nano /etc/dhcpcd.conf
+# Comment out or remove the static IP lines
+sudo systemctl restart dhcpcd
+```
+
 ### Performance Issues
 
 ```bash
@@ -227,7 +370,7 @@ df -h
 
 ### Changing the URL
 
-Edit `/home/dietpi/start-scoreboard.sh` and modify the Chromium startup line:
+Edit `/home/dietpi/scripts/scoreboard-management/start-scoreboard.sh` and modify the Chromium startup line:
 
 ```bash
 chromium-browser --kiosk ... http://your-custom-url

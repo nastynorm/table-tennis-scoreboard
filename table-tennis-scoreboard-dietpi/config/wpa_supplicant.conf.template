@@ -1,0 +1,32 @@
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=US
+
+# WiFi Network Configuration
+# Replace YOUR_WIFI_NAME and YOUR_WIFI_PASSWORD with your actual credentials
+network={
+    ssid="YOUR_WIFI_NAME"
+    psk="YOUR_WIFI_PASSWORD"
+    key_mgmt=WPA-PSK
+}
+
+# Example for your 192.168.88.x network:
+# network={
+#     ssid="YourNetworkName"
+#     psk="YourNetworkPassword"
+#     key_mgmt=WPA-PSK
+# }
+
+# For open networks (no password):
+# network={
+#     ssid="OpenNetworkName"
+#     key_mgmt=NONE
+# }
+
+# For hidden networks:
+# network={
+#     ssid="HiddenNetworkName"
+#     psk="NetworkPassword"
+#     key_mgmt=WPA-PSK
+#     scan_ssid=1
+# }

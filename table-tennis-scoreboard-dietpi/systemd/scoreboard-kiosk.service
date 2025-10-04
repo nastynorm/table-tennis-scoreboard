@@ -1,6 +1,6 @@
 [Unit]
 Description=Table Tennis Scoreboard Kiosk Service
-Documentation=https://github.com/yourusername/table-tennis-scoreboard
+Documentation=https://github.com/nastynorm/table-tennis-scoreboard
 After=graphical-session.target network-online.target
 Wants=graphical-session.target network-online.target
 Requires=network-online.target

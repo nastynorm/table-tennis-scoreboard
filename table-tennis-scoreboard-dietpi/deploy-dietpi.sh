@@ -14,7 +14,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-SCOREBOARD_URL="https://github.com/yourusername/table-tennis-scoreboard.git"
+SCOREBOARD_URL="https://github.com/nastynorm/table-tennis-scoreboard.git"
 INSTALL_DIR="/home/dietpi/scoreboard"
 SERVICE_NAME="scoreboard-kiosk"
 
@@ -31,9 +31,84 @@ check_dietpi() {
     fi
 }
 
+# Function to check network connectivity
+check_network_connectivity() {
+    echo -e "${BLUE}Checking network connectivity...${NC}"
+    
+    # Check if we have an IP address
+    CURRENT_IP=$(hostname -I | awk '{print $1}')
+    if [ -z "$CURRENT_IP" ]; then
+        echo -e "${RED}No IP address assigned. Network not connected.${NC}"
+        return 1
+    fi
+    
+    # Check if we can reach the internet
+    if ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+        echo -e "${GREEN}✓ Network connectivity confirmed${NC}"
+        echo "Current IP: $CURRENT_IP"
+        
+        # Check WiFi connection details
+        if iwconfig 2>/dev/null | grep -q "ESSID"; then
+            WIFI_SSID=$(iwconfig 2>/dev/null | grep "ESSID" | sed 's/.*ESSID:"\([^"]*\)".*/\1/')
+            echo "Connected to WiFi: $WIFI_SSID"
+        fi
+        return 0
+    else
+        echo -e "${YELLOW}⚠ Limited connectivity - no internet access${NC}"
+        echo "Current IP: $CURRENT_IP"
+        return 1
+    fi
+}
+
+# Function to wait for network connection
+wait_for_network() {
+    echo -e "${YELLOW}Waiting for network connection...${NC}"
+    local timeout=60
+    local counter=0
+    
+    while [ $counter -lt $timeout ]; do
+        if check_network_connectivity >/dev/null 2>&1; then
+            echo -e "${GREEN}Network connection established.${NC}"
+            return 0
+        fi
+        
+        echo "Waiting for network... ($counter/$timeout seconds)"
+        sleep 2
+        counter=$((counter + 2))
+    done
+    
+    echo -e "${RED}Network connection timeout after $timeout seconds${NC}"
+    echo -e "${YELLOW}Continuing with deployment, but some features may not work properly.${NC}"
+    return 1
+}
+
+# Function to detect pre-configured WiFi
+detect_wifi_config() {
+    echo -e "${BLUE}Detecting WiFi configuration...${NC}"
+    
+    # Check if wpa_supplicant.conf exists and has networks configured
+    if [ -f /etc/wpa_supplicant/wpa_supplicant.conf ]; then
+        if grep -q "network=" /etc/wpa_supplicant/wpa_supplicant.conf; then
+            local configured_ssid=$(grep -A 10 "network=" /etc/wpa_supplicant/wpa_supplicant.conf | grep "ssid=" | head -1 | sed 's/.*ssid="\([^"]*\)".*/\1/')
+            echo -e "${GREEN}✓ WiFi already configured for: $configured_ssid${NC}"
+            return 0
+        fi
+    fi
+    
+    echo -e "${YELLOW}No WiFi configuration detected${NC}"
+    return 1
+}
+
 # Function to update system
 update_system() {
     echo -e "${BLUE}Updating DietPi system...${NC}"
+    
+    # Check network first
+    if ! check_network_connectivity; then
+        echo -e "${YELLOW}Network issues detected. Attempting to continue...${NC}"
+        wait_for_network
+    fi
+    
     dietpi-update
     echo -e "${GREEN}System updated successfully.${NC}"
 }
@@ -299,6 +374,122 @@ EOF
     echo -e "${GREEN}System optimizations applied.${NC}"
 }
 
+# Function to configure static IP
+configure_static_ip() {
+    echo -e "${BLUE}Network Configuration${NC}"
+    echo ""
+    echo "Would you like to configure a static IP address? (recommended for kiosk deployment)"
+    echo "This ensures your Pi always has the same IP address for easy access."
+    echo ""
+    read -p "Configure static IP? (y/n): " configure_ip
+    
+    if [[ "$configure_ip" =~ ^[Yy]$ ]]; then
+        echo ""
+        echo -e "${YELLOW}Current network information:${NC}"
+        
+        # Get current network info
+        CURRENT_IP=$(hostname -I | awk '{print $1}')
+        CURRENT_GATEWAY=$(ip route show default | awk '/default/ { print $3 }')
+        CURRENT_INTERFACE=$(ip route show default | awk '/default/ { print $5 }')
+        
+        echo "Current IP: $CURRENT_IP"
+        echo "Current Gateway: $CURRENT_GATEWAY"
+        echo "Current Interface: $CURRENT_INTERFACE"
+        echo ""
+        
+        # Prompt for static IP settings
+        echo -e "${BLUE}Enter static IP configuration:${NC}"
+        
+        # Suggest an IP based on current network
+        NETWORK_BASE=$(echo $CURRENT_IP | cut -d. -f1-3)
+        SUGGESTED_IP="${NETWORK_BASE}.100"
+        
+        # Special handling for common network ranges
+        if [[ $NETWORK_BASE == "192.168.88" ]]; then
+            SUGGESTED_IP="192.168.88.100"
+            echo "Detected 192.168.88.x network range"
+        elif [[ $NETWORK_BASE == "192.168.1" ]]; then
+            SUGGESTED_IP="192.168.1.100"
+        elif [[ $NETWORK_BASE == "192.168.0" ]]; then
+            SUGGESTED_IP="192.168.0.100"
+        fi
+        
+        echo "Recommended IP range: ${NETWORK_BASE}.100-254 (avoid DHCP range typically .1-.99)"
+        read -p "Static IP address [$SUGGESTED_IP]: " STATIC_IP
+        STATIC_IP=${STATIC_IP:-$SUGGESTED_IP}
+        
+        # Suggest gateway based on network
+        SUGGESTED_GATEWAY=$CURRENT_GATEWAY
+        if [[ $NETWORK_BASE == "192.168.88" ]] && [[ -z $CURRENT_GATEWAY ]]; then
+            SUGGESTED_GATEWAY="192.168.88.1"
+        fi
+        
+        read -p "Gateway [$SUGGESTED_GATEWAY]: " GATEWAY
+        GATEWAY=${GATEWAY:-$SUGGESTED_GATEWAY}
+        
+        read -p "DNS servers [8.8.8.8,8.8.4.4]: " DNS_SERVERS
+        DNS_SERVERS=${DNS_SERVERS:-"8.8.8.8,8.8.4.4"}
+        
+        echo ""
+        echo -e "${YELLOW}Configuring static IP...${NC}"
+        echo "IP: $STATIC_IP"
+        echo "Gateway: $GATEWAY"
+        echo "DNS: $DNS_SERVERS"
+        echo "Interface: $CURRENT_INTERFACE"
+        
+        # Backup current dhcpcd.conf
+        cp /etc/dhcpcd.conf /etc/dhcpcd.conf.backup
+        
+        # Add static IP configuration to dhcpcd.conf
+        cat >> /etc/dhcpcd.conf << EOF
+
+# Static IP configuration added by deployment script
+interface $CURRENT_INTERFACE
+static ip_address=$STATIC_IP/24
+static routers=$GATEWAY
+static domain_name_servers=$DNS_SERVERS
+EOF
+        
+        echo -e "${GREEN}Static IP configuration added to /etc/dhcpcd.conf${NC}"
+        echo ""
+        echo -e "${YELLOW}Note: Network changes will take effect after reboot.${NC}"
+        echo "Your Pi will be accessible at: http://$STATIC_IP:3000"
+        echo ""
+        
+        # Create a script to revert to DHCP if needed
+        cat > /home/dietpi/revert-to-dhcp.sh << 'EOF'
+#!/bin/bash
+# Script to revert static IP back to DHCP
+
+echo "Reverting to DHCP configuration..."
+
+# Restore backup
+if [ -f /etc/dhcpcd.conf.backup ]; then
+    cp /etc/dhcpcd.conf.backup /etc/dhcpcd.conf
+    echo "dhcpcd.conf restored from backup"
+else
+    # Remove static IP configuration
+    sed -i '/# Static IP configuration added by deployment script/,$d' /etc/dhcpcd.conf
+    echo "Static IP configuration removed"
+fi
+
+# Restart networking
+systemctl restart dhcpcd
+systemctl restart networking
+
+echo "Reverted to DHCP. Reboot to apply changes: sudo reboot"
+EOF
+        
+        chmod +x /home/dietpi/revert-to-dhcp.sh
+        echo "Created revert script: /home/dietpi/revert-to-dhcp.sh"
+        
+    else
+        echo -e "${YELLOW}Skipping static IP configuration. Using DHCP.${NC}"
+        echo "Your Pi will use automatic IP assignment."
+    fi
+    echo ""
+}
+
 # Function to create troubleshooting scripts
 create_troubleshooting_scripts() {
     echo -e "${BLUE}Creating troubleshooting scripts...${NC}"
@@ -369,8 +560,14 @@ main() {
     echo -e "${YELLOW}Starting DietPi deployment process...${NC}"
     
     check_dietpi
+    
+    # Check WiFi configuration and network connectivity
+    detect_wifi_config
+    check_network_connectivity
+    
     update_system
     install_software
+    configure_static_ip
     configure_display
     setup_application
     create_startup_script
@@ -392,6 +589,7 @@ main() {
     echo "Troubleshooting commands:"
     echo "- Fix display issues: ./fix-display.sh"
     echo "- Manage service: ./manage-scoreboard.sh {start|stop|restart|status|logs}"
+    echo "- Revert to DHCP: ./revert-to-dhcp.sh (if static IP was configured)"
     echo "- Check service status: systemctl status scoreboard-kiosk"
     echo "- View logs: journalctl -u scoreboard-kiosk -f"
     echo ""
