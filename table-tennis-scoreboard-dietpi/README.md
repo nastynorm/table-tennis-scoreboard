@@ -136,6 +136,41 @@ sudo reboot                          # Restart system
 
 ## Troubleshooting
 
+### White Lines Moving Across Screen (Waveshare 5" LCD)
+
+This is a common issue with the Waveshare 5" LCD. Try these solutions in order:
+
+**Solution 1: Use Updated Config (Recommended)**
+```bash
+# Copy the updated config.txt template
+sudo cp config/config.txt.template /boot/config.txt
+sudo reboot
+```
+
+**Solution 2: Force Legacy Framebuffer**
+```bash
+# Edit /boot/config.txt and change:
+# dtoverlay=vc4-kms-v3d,noaudio
+# to:
+# dtoverlay=vc4-fkms-v3d,noaudio
+# framebuffer_width=800
+# framebuffer_height=480
+sudo nano /boot/config.txt
+sudo reboot
+```
+
+**Solution 3: Disable Hardware Acceleration**
+```bash
+# Edit /boot/config.txt and comment out all dtoverlay lines:
+# #dtoverlay=vc4-kms-v3d,noaudio
+# Add:
+# framebuffer_width=800
+# framebuffer_height=480
+# gpu_mem=64
+sudo nano /boot/config.txt
+sudo reboot
+```
+
 ### White Screen or Display Issues
 
 ```bash
