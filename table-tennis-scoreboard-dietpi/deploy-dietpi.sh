@@ -24,9 +24,24 @@ echo ""
 
 # Function to check if running on DietPi
 check_dietpi() {
-    if [ ! -f /boot/dietpi/.dietpi-autostart_index ]; then
+    # Check multiple DietPi indicators
+    if [ -f /boot/dietpi/.dietpi-autostart_index ] || \
+       [ -f /DietPi/dietpi/dietpi-software ] || \
+       [ -f /usr/local/bin/dietpi-software ] || \
+       [ -d /boot/dietpi ] || \
+       [ -d /DietPi ] || \
+       command -v dietpi-config >/dev/null 2>&1 || \
+       grep -qi "dietpi" /etc/os-release 2>/dev/null; then
+        echo -e "${GREEN}✓ DietPi system detected${NC}"
+        return 0
+    else
         echo -e "${RED}Error: This script is designed for DietPi systems only.${NC}"
         echo "Please install DietPi first: https://dietpi.com/"
+        echo ""
+        echo "Debug info:"
+        echo "- /boot/dietpi exists: $([ -d /boot/dietpi ] && echo 'Yes' || echo 'No')"
+        echo "- /DietPi exists: $([ -d /DietPi ] && echo 'Yes' || echo 'No')"
+        echo "- dietpi-config available: $(command -v dietpi-config >/dev/null 2>&1 && echo 'Yes' || echo 'No')"
         exit 1
     fi
 }
