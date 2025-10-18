@@ -10,6 +10,7 @@ import PlayingGame from "./PlayingGame";
 import GameOver from "./GameOver";
 import SwitchingSides from "./SwitchingSides";
 import MatchOver from "./MatchOver";
+import LeagueOver from "./LeagueOver";
 import Setup from "./Setup";
 import Menu from "./Menu";
 
@@ -38,6 +39,12 @@ export default function Game() {
     timeoutActive: false,
     timeoutPlayer: 0,
     timeoutRemaining: 0,
+    homeTeamName: "Home Team",
+    visitorTeamName: "Visitor Team",
+    homeTeamScore: 0,
+    visitorTeamScore: 0,
+    totalMatches: 7,
+    currentMatchNumber: 1,
   });
   const [config, setConfig] = createStore<GameConfig>({
     ...defaultGameConfig,
@@ -54,6 +61,10 @@ export default function Game() {
       }
       const player1Name = localStorage.getItem("player1Name");
       const player2Name = localStorage.getItem("player2Name");
+      const homeTeamName = localStorage.getItem("homeTeamName");
+      const visitorTeamName = localStorage.getItem("visitorTeamName");
+      const totalMatches = localStorage.getItem("totalMatches");
+      
       setMatchState((state) => ({
         ...state,
         player1: {
@@ -64,6 +75,9 @@ export default function Game() {
           ...state.player2,
           name: player2Name ?? state.player2.name,
         },
+        homeTeamName: homeTeamName ?? state.homeTeamName,
+        visitorTeamName: visitorTeamName ?? state.visitorTeamName,
+        totalMatches: totalMatches ? parseInt(totalMatches, 10) : state.totalMatches,
       }));
     }
   });
@@ -95,25 +109,39 @@ export default function Game() {
   };
   const newMatch = () => {
     setMode(GameMode.Game);
-    setMatchState((state) => ({
-      player1: {
-        name: state.player1.name,
-        score: 0,
-        games: 0,
-        timeoutsUsed: 0,
-      },
-      player2: {
-        name: state.player2.name,
-        score: 0,
-        games: 0,
-        timeoutsUsed: 0,
-      },
-      gameLog: [],
-      swapped: false,
-      timeoutActive: false,
-      timeoutPlayer: 0,
-      timeoutRemaining: 0,
-    }));
+    setMatchState((state) => {
+      // Generate initial player names for league format
+      const homeTeamName = state.homeTeamName || "Home";
+      const visitorTeamName = state.visitorTeamName || "Visitor";
+      const initialPlayer1Name = `H1`;
+    const initialPlayer2Name = `V1`;
+      
+      return {
+        player1: {
+          name: initialPlayer1Name,
+          score: 0,
+          games: 0,
+          timeoutsUsed: 0,
+        },
+        player2: {
+          name: initialPlayer2Name,
+          score: 0,
+          games: 0,
+          timeoutsUsed: 0,
+        },
+        gameLog: [],
+        swapped: false,
+        timeoutActive: false,
+        timeoutPlayer: 0,
+        timeoutRemaining: 0,
+        homeTeamName: state.homeTeamName,
+        visitorTeamName: state.visitorTeamName,
+        homeTeamScore: 0,
+        visitorTeamScore: 0,
+        totalMatches: state.totalMatches,
+        currentMatchNumber: 1,
+      };
+    });
   };
 
   return (
@@ -125,6 +153,7 @@ export default function Game() {
         "bg-green-700": // Green for game completion states
           mode() === GameMode.GameOver ||
           mode() === GameMode.MatchOver ||
+          mode() === GameMode.LeagueOver ||
           mode() === GameMode.SwitchingSides,
         "bg-blue-700": mode() === GameMode.Setup,
       }}
@@ -151,6 +180,9 @@ export default function Game() {
           </Match>
           <Match when={mode() === GameMode.MatchOver}>
             <MatchOver newMatch={newMatch} matchState={matchState} />
+          </Match>
+          <Match when={mode() === GameMode.LeagueOver}>
+            <LeagueOver newMatch={newMatch} matchState={matchState} />
           </Match>
           <Match when={mode() === GameMode.Setup}>
             <Setup

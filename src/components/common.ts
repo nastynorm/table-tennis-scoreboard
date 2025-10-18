@@ -6,6 +6,7 @@ export enum GameMode {
   Setup = 4,
   SwitchingSides = 5,
   Timeout = 6,
+  LeagueOver = 7,
 }
 
 // TODO: add config for showing swap ends reminder
@@ -45,6 +46,13 @@ export type MatchState = {
   timeoutActive: boolean;
   timeoutPlayer: number;
   timeoutRemaining: number;
+  // Team functionality
+  homeTeamName: string;
+  visitorTeamName: string;
+  homeTeamScore: number;
+  visitorTeamScore: number;
+  totalMatches: number;
+  currentMatchNumber: number;
 };
 
 export const defaultGameConfig: GameConfig = {

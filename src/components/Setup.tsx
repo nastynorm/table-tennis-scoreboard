@@ -123,10 +123,19 @@ export default function Setup(props: SetupProps) {
       winningScore = props.config.winningScore;
     }
 
+    let totalMatches = parseInt(data.get("totalMatches") as string, 10);
+    if (isNaN(totalMatches) || totalMatches < 1) {
+      totalMatches = 7; // Default to 7 matches for league play
+    }
+
     const player1Name =
       data.get("player1Name") ?? props.matchState.player1.name;
     const player2Name =
       data.get("player2Name") ?? props.matchState.player2.name;
+    const homeTeamName =
+      data.get("homeTeamName") ?? props.matchState.homeTeamName;
+    const visitorTeamName =
+      data.get("visitorTeamName") ?? props.matchState.visitorTeamName;
 
     const switchSides = data.get("switchSides") === "on" || false;
     console.log(switchSides);
@@ -153,10 +162,17 @@ export default function Setup(props: SetupProps) {
         ...state.player2,
         name: player2Name as string,
       },
+      homeTeamName: homeTeamName as string,
+      visitorTeamName: visitorTeamName as string,
+      totalMatches: totalMatches,
+      currentMatchNumber: 1,
     }));
     localStorage.setItem("config", JSON.stringify(nextConfig));
     localStorage.setItem("player1Name", player1Name as string);
     localStorage.setItem("player2Name", player2Name as string);
+    localStorage.setItem("homeTeamName", homeTeamName as string);
+    localStorage.setItem("visitorTeamName", visitorTeamName as string);
+    localStorage.setItem("totalMatches", totalMatches.toString());
 
     props.setMode(GameMode.Game);
   };
@@ -173,44 +189,121 @@ export default function Setup(props: SetupProps) {
       <header class="flex justify-center w-full text-center">
         <h1 class="text-4xl font-normal font-sports">Setup Your Match</h1>
       </header>
-      <div class="grid grid-cols-1 mt-8 md:grid-cols-2 gap-4">
-        <div class="flex flex-col">
-          <label
-            for="player1Name"
-            class="font-normal tracking-wider text-black font-sports"
-          >
-            Player 1 Name
-          </label>
-          <div class="border-2 border-transparent focus-within:border-black">
-            <input
-              type="text"
-              name="player1Name"
-              value={props.matchState.player1.name}
-              data-testid="player1-name-input"
-              id="player1Name"
-              class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
-            />
+      
+      {/* Team Names Section */}
+      <section class="mt-8">
+        <h4 class="mb-4 text-2xl font-normal tracking-wider font-sports text-center">
+          Team Information
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label
+              for="homeTeamName"
+              class="font-normal tracking-wider text-black font-sports"
+            >
+              Home Team Name
+            </label>
+            <div class="border-2 border-transparent focus-within:border-black">
+              <input
+                type="text"
+                name="homeTeamName"
+                value={props.matchState.homeTeamName || "Home Team"}
+                data-testid="home-team-name-input"
+                id="homeTeamName"
+                class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
+              />
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <label
+              for="visitorTeamName"
+              class="font-normal tracking-wider text-black font-sports"
+            >
+              Visitor Team Name
+            </label>
+            <div class="border-2 border-transparent focus-within:border-black">
+              <input
+                type="text"
+                name="visitorTeamName"
+                value={props.matchState.visitorTeamName || "Visitor Team"}
+                data-testid="visitor-team-name-input"
+                id="visitorTeamName"
+                class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
+              />
+            </div>
           </div>
         </div>
-        <div class="flex flex-col">
-          <label
-            for="player2Name"
-            class="font-normal tracking-wider text-black font-sports"
-          >
-            Player 2 Name
-          </label>
-          <div class="border-2 border-transparent focus-within:border-black">
-            <input
-              type="text"
-              value={props.matchState.player2.name}
-              data-testid="player2-name-input"
-              id="player2Name"
-              name="player2Name"
-              class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
-            />
+        <div class="mt-4">
+          <div class="flex flex-col">
+            <label
+              for="totalMatches"
+              class="font-normal tracking-wider text-black font-sports"
+            >
+              Total Matches in League Night
+            </label>
+            <div class="border-2 border-transparent focus-within:border-black">
+              <input
+                type="number"
+                name="totalMatches"
+                value={props.matchState.totalMatches || 7}
+                min="1"
+                max="15"
+                data-testid="total-matches-input"
+                id="totalMatches"
+                class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
+              />
+            </div>
+            <p class="text-sm text-gray-600 mt-1 font-mono">
+              Standard league format is 7 matches (all matches played)
+            </p>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Player Names Section */}
+      <section class="mt-8">
+        <h4 class="mb-4 text-2xl font-normal tracking-wider font-sports text-center">
+          Current Match Players
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label
+              for="player1Name"
+              class="font-normal tracking-wider text-black font-sports"
+            >
+              Player 1 Name (Home)
+            </label>
+            <div class="border-2 border-transparent focus-within:border-black">
+              <input
+                type="text"
+                name="player1Name"
+                value={props.matchState.player1.name}
+                data-testid="player1-name-input"
+                id="player1Name"
+                class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
+              />
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <label
+              for="player2Name"
+              class="font-normal tracking-wider text-black font-sports"
+            >
+              Player 2 Name (Visitor)
+            </label>
+            <div class="border-2 border-transparent focus-within:border-black">
+              <input
+                type="text"
+                value={props.matchState.player2.name}
+                data-testid="player2-name-input"
+                id="player2Name"
+                name="player2Name"
+                class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
       <section class="mt-4">
         <h4 class="mb-2 text-2xl font-normal tracking-wider font-sports">
           Scoring Keys

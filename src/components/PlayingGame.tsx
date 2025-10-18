@@ -27,6 +27,29 @@ interface SidePlayer {
   redNumber: Accessor<boolean>;
 }
 
+// Helper function to generate player names based on match number
+const generatePlayerNames = (matchNumber: number): { player1Name: string; player2Name: string } => {
+  switch (matchNumber) {
+    case 1:
+      return { player1Name: "H1", player2Name: "V1" };
+    case 2:
+      return { player1Name: "H2", player2Name: "V2" };
+    case 3:
+      return { player1Name: "H3", player2Name: "V3" };
+    case 4:
+      return { player1Name: "Doubles-H", player2Name: "Doubles-V" };
+    case 5:
+      return { player1Name: "H1", player2Name: "V2" };
+    case 6:
+      return { player1Name: "H3", player2Name: "V1" };
+    case 7:
+      return { player1Name: "H2", player2Name: "V3" };
+    default:
+      // Fallback for additional matches
+      return { player1Name: `H${matchNumber}`, player2Name: `V${matchNumber}` };
+  }
+};
+
 export default function PlayingGame(props: PlayingGameProps) {
   const [showAdvancedConfig, setShowAdvancedConfig] = createSignal(false);
   const [player1RedNumber, setPlayer1RedNumber] = createSignal(false);
@@ -43,7 +66,55 @@ export default function PlayingGame(props: PlayingGameProps) {
       ) {
         // update games
         let nextGames = state.player1.games + 1;
-        // check for game over or match over
+        let nextHomeTeamScore = state.homeTeamScore;
+        let nextCurrentMatchNumber = state.currentMatchNumber;
+        
+        // Check if match is completed (player reaches 3 games)
+        if (nextGames >= 3) {
+          nextHomeTeamScore = state.homeTeamScore + 1;
+          nextCurrentMatchNumber = state.currentMatchNumber + 1;
+          
+          // Check if all matches in the league are completed
+          if (nextCurrentMatchNumber > (state.totalMatches || 7)) {
+            // All matches completed - go to LeagueOver
+            props.setMode(GameMode.LeagueOver);
+          } else {
+            // Reset for next match in the league
+            props.setMode(GameMode.GameOver);
+          }
+          
+          // Generate player names for the next match
+          const { player1Name: nextPlayer1Name, player2Name: nextPlayer2Name } = generatePlayerNames(nextCurrentMatchNumber);
+          
+          return {
+            ...state,
+            gameLog: [
+              ...state.gameLog,
+              {
+                winner: state.player1,
+                player1Score: nextScore,
+                player2Score: state.player2.score,
+              },
+            ],
+            // Reset players for next match with updated names
+            player1: {
+              ...state.player1,
+              name: nextPlayer1Name,
+              games: 0,
+              score: 0,
+            },
+            player2: {
+              ...state.player2,
+              name: nextPlayer2Name,
+              games: 0,
+              score: 0,
+            },
+            homeTeamScore: nextHomeTeamScore,
+            currentMatchNumber: nextCurrentMatchNumber,
+          };
+        }
+        
+        // Regular game win (not match completion)
         if (nextGames > props.config.matchLength / 2) {
           props.setMode(GameMode.MatchOver);
         } else {
@@ -64,6 +135,8 @@ export default function PlayingGame(props: PlayingGameProps) {
             games: nextGames,
             score: nextScore,
           },
+          homeTeamScore: nextHomeTeamScore,
+          currentMatchNumber: nextCurrentMatchNumber,
         };
       }
       return {
@@ -85,7 +158,55 @@ export default function PlayingGame(props: PlayingGameProps) {
       ) {
         // update games
         let nextGames = state.player2.games + 1;
-        // check for game over or match over
+        let nextVisitorTeamScore = state.visitorTeamScore;
+        let nextCurrentMatchNumber = state.currentMatchNumber;
+        
+        // Check if match is completed (player reaches 3 games)
+        if (nextGames >= 3) {
+          nextVisitorTeamScore = state.visitorTeamScore + 1;
+          nextCurrentMatchNumber = state.currentMatchNumber + 1;
+          
+          // Check if all matches in the league are completed
+          if (nextCurrentMatchNumber > (state.totalMatches || 7)) {
+            // All matches completed - go to LeagueOver
+            props.setMode(GameMode.LeagueOver);
+          } else {
+            // Reset for next match in the league
+            props.setMode(GameMode.GameOver);
+          }
+          
+          // Generate player names for the next match
+          const { player1Name: nextPlayer1Name, player2Name: nextPlayer2Name } = generatePlayerNames(nextCurrentMatchNumber);
+          
+          return {
+            ...state,
+            gameLog: [
+              ...state.gameLog,
+              {
+                winner: state.player2,
+                player1Score: state.player1.score,
+                player2Score: nextScore,
+              },
+            ],
+            // Reset players for next match with updated names
+            player1: {
+              ...state.player1,
+              name: nextPlayer1Name,
+              games: 0,
+              score: 0,
+            },
+            player2: {
+              ...state.player2,
+              name: nextPlayer2Name,
+              games: 0,
+              score: 0,
+            },
+            visitorTeamScore: nextVisitorTeamScore,
+            currentMatchNumber: nextCurrentMatchNumber,
+          };
+        }
+        
+        // Regular game win (not match completion)
         if (nextGames > props.config.matchLength / 2) {
           props.setMode(GameMode.MatchOver);
         } else {
@@ -106,6 +227,8 @@ export default function PlayingGame(props: PlayingGameProps) {
             games: nextGames,
             score: nextScore,
           },
+          visitorTeamScore: nextVisitorTeamScore,
+          currentMatchNumber: nextCurrentMatchNumber,
         };
       }
       return {
@@ -272,6 +395,45 @@ export default function PlayingGame(props: PlayingGameProps) {
 
   return (
     <>
+      {/* Team Names and Match Score Header */}
+      <header class="grid grid-cols-3 items-center py-4 px-8 bg-gray-100 border-b-4 border-black">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold font-sports text-blue-800">
+            {props.matchState.swapped 
+              ? (props.matchState.visitorTeamName || "Visitor Team")
+              : (props.matchState.homeTeamName || "Home Team")
+            }
+          </h2>
+          <div class="text-4xl font-bold font-mono text-blue-800">
+            {props.matchState.swapped 
+              ? props.matchState.visitorTeamScore
+              : props.matchState.homeTeamScore
+            }
+          </div>
+        </div>
+        
+        <div class="text-center">
+          <div class="text-lg font-sports text-gray-600">
+            Match {props.matchState.currentMatchNumber} of {props.matchState.totalMatches}
+          </div>
+        </div>
+        
+        <div class="text-center">
+          <h2 class="text-2xl font-bold font-sports text-red-800">
+            {props.matchState.swapped 
+              ? (props.matchState.homeTeamName || "Home Team")
+              : (props.matchState.visitorTeamName || "Visitor Team")
+            }
+          </h2>
+          <div class="text-4xl font-bold font-mono text-red-800">
+            {props.matchState.swapped 
+              ? props.matchState.homeTeamScore
+              : props.matchState.visitorTeamScore
+            }
+          </div>
+        </div>
+      </header>
+
       <main class="grid grid-cols-2">
         <PlayerScore
           mode={props.mode}

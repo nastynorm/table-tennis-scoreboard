@@ -7,10 +7,11 @@ interface GameOverProps {
   newGame: Function;
 }
 export default function GameOver(props: GameOverProps) {
-  const winnerName = () =>
-    props.matchState.player1.score > props.matchState.player2.score
-      ? props.matchState.player1.name
-      : props.matchState.player2.name;
+  const winnerName = () => {
+    // Get the winner from the last game in the log
+    const lastGame = props.matchState.gameLog[props.matchState.gameLog.length - 1];
+    return lastGame ? lastGame.winner.name : props.matchState.player1.name;
+  };
 
   const handleKeyUp = (ev: KeyboardEvent) => {
     ev.preventDefault();
