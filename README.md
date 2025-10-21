@@ -31,6 +31,15 @@ npm run dev
 
 The development server will start at `http://localhost:4321` with hot reloading enabled.
 
+## 🔧 Raspberry Pi Folder
+- Deployment scripts and docs are now organized under `raspberry-pi/`:
+  - `raspberry-pi/README.md` — overview and contents
+  - `raspberry-pi/HOWTO-RASPBERRY-PI.md` — complete step-by-step guide
+  - `raspberry-pi/README-RASPBERRY-PI.md` — hardware and display notes
+  - `raspberry-pi/setup-pi-chromium.sh` — Chromium setup
+  - `raspberry-pi/start-scoreboard-chromium.sh` — start in kiosk mode
+  - `raspberry-pi/autostart-scoreboard.desktop` — autostart entry
+
 ### Production Build
 ```bash
 # Build for production
