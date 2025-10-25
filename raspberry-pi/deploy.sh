@@ -123,9 +123,26 @@ if ! grep -q "startx" "$BASH_PROFILE"; then
 EOF
 fi
 
-# Step 10 — Remind to enable auto-login (interactive)
-log "Reminder: enable console autologin so .bash_profile runs at boot:"
-log "  sudo raspi-config -> System Options -> Boot / Auto Login -> Console Autologin"
+# Step 8.1 — Ensure X starts Openbox (via ~/.xinitrc)
+log "Ensuring X starts Openbox (creating ~/.xinitrc)..."
+XINITRC="$HOME/.xinitrc"
+if [ ! -f "$XINITRC" ] || ! grep -q "openbox-session" "$XINITRC"; then
+  cat > "$XINITRC" <<'EOF'
+exec openbox-session
+EOF
+fi
+
+# Step 10 — Configure console autologin (non-interactive)
+log "Configuring console autologin for user 'pi' on tty1..."
+AGETTY_BIN=$(command -v agetty || echo /sbin/agetty)
+sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
+sudo bash -lc "cat > /etc/systemd/system/getty@tty1.service.d/override.conf" <<EOF
+[Service]
+ExecStart=
+ExecStart=-$AGETTY_BIN --autologin pi --noclear %I 38400 linux
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart getty@tty1.service || true
 
 log "All steps completed. You can test now or reboot:"
 log "  Chromium: will launch in kiosk via Openbox when X starts"
