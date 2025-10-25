@@ -1,436 +1,264 @@
-# Table Tennis Scoreboard
+# Raspberry Pi Zero 2 W: Table Tennis Scoreboard Kiosk Setup
 
-A modern, responsive table tennis scoreboard application designed for tournaments, clubs, and casual play. Features a clean interface, comprehensive match tracking, and specialized support for 7-match league formats.
+Goal
 
-## 🏓 Features
+- Serve your Astro scoreboard locally on the Pi.
+- Launch Chromium in full-screen kiosk mode displaying it on boot.
+- Work reliably on a Pi Zero 2 W with minimal overhead.
 
-- **Match Formats**: Support for singles, doubles, and mixed league formats
-- **7-Match League System**: Complete tournament structure with cross-singles
-- **Real-time Scoring**: Live score updates with game and match tracking
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Fullscreen Mode**: Perfect for dedicated display screens
-- **Raspberry Pi Ready**: Optimized for kiosk deployments
+## Step 1 — Install Raspberry Pi OS Lite (64-bit)
 
-## 🚀 Quick Start
+- Download Raspberry Pi OS Lite 64-bit:
+  https://www.raspberrypi.com/software/operating-systems/
+- Flash it to a microSD card using Raspberry Pi Imager.
+- Enable SSH and Wi-Fi during imaging or edit `ssh` and `wpa_supplicant.conf` manually.
 
-### Web Version
-Visit [tabletennisscoreboard.com](https://tabletennisscoreboard.com) to use the online version immediately.
+## Step 2 — Update system
 
-### Local Development
-```bash
-# Clone the repository
-git clone https://github.com/nastynorm/table-tennis-scoreboard.git
-cd table-tennis-scoreboard
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-The development server will start at `http://localhost:4321` with hot reloading enabled.
-
-## 🔧 Raspberry Pi Folder
-- Deployment scripts and docs are now organized under `raspberry-pi/`:
-  - `raspberry-pi/README.md` — overview and contents
-  - `raspberry-pi/HOWTO-RASPBERRY-PI.md` — complete step-by-step guide
-  - `raspberry-pi/README-RASPBERRY-PI.md` — hardware and display notes
-  - `raspberry-pi/setup-pi-chromium.sh` — Chromium setup
-  - `raspberry-pi/start-scoreboard-chromium.sh` — start in kiosk mode
-  - `raspberry-pi/autostart-scoreboard.desktop` — autostart entry
-
-### Production Build
-```bash
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-## 🖥️ Raspberry Pi 4 Installation Guide
-
-This guide provides detailed instructions for setting up the scoreboard on a Raspberry Pi 4 (4GB) with desktop environment and Chromium fullscreen mode.
-
-### Prerequisites
-
-- **Raspberry Pi 4** (4GB RAM recommended)
-- **MicroSD Card** (16GB+ Class 10)
-- **Monitor/Display** (HDMI connection)
-- **Keyboard and Mouse** (for initial setup)
-- **Stable Internet Connection** (WiFi or Ethernet)
-
-### Step 1: Prepare Raspberry Pi OS
-
-1. **Download Raspberry Pi Imager**
-   - Download from [rpi.org](https://www.raspberrypi.org/software/)
-   - Install on your computer
-
-2. **Flash Raspberry Pi OS**
-   - Insert MicroSD card into your computer
-   - Open Raspberry Pi Imager
-   - Choose "Raspberry Pi OS (64-bit)" with Desktop
-   - Select your MicroSD card
-   - Click "Write" and wait for completion
-
-3. **Initial Boot Setup**
-   - Insert SD card into Raspberry Pi 4
-   - Connect monitor, keyboard, and mouse
-   - Power on the Pi
-   - Follow the setup wizard:
-     - Set country, language, and timezone
-     - Create user account (default: `pi`)
-     - Connect to WiFi
-     - Update system when prompted
-
-4. **Enable SSH (Optional but Recommended)**
-   ```bash
-   sudo systemctl enable ssh
-   sudo systemctl start ssh
-   ```
-
-### Step 2: Configure Auto-Login to Desktop
-
-1. **Open Raspberry Pi Configuration**
-   ```bash
-   sudo raspi-config
-   ```
-
-2. **Configure Boot Options**
-   - Navigate to "System Options" → "Boot / Auto Login"
-   - Select "Desktop Autologin" (Desktop GUI, automatically logged in as 'pi' user)
-   - Select "Finish" and reboot when prompted
-
-### Step 3: Install Dependencies
-
-1. **Update System Packages**
-   ```bash
-   sudo apt update && sudo apt upgrade -y
-   ```
-
-2. **Install Chromium Browser**
-   ```bash
-   sudo apt install -y chromium-browser
-   ```
-
-3. **Install Node.js 20+**
-   
-   **Option A: Via NodeSource (Recommended)**
-   ```bash
-   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-   sudo apt install -y nodejs
-   ```
-   
-   **Option B: Via NVM**
-   ```bash
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-   source ~/.bashrc
-   nvm install 20
-   nvm use 20
-   ```
-
-4. **Verify Installation**
-   ```bash
-   node --version  # Should show v20.x.x
-   npm --version   # Should show 10.x.x
-   chromium-browser --version  # Should show Chromium version
-   ```
-
-### Step 4: Deploy the Scoreboard Application
-
-1. **Download the Application**
-   ```bash
-   cd ~
-   git clone https://github.com/nastynorm/table-tennis-scoreboard.git
-   cd table-tennis-scoreboard
-   ```
-
-2. **Install Application Dependencies**
-   ```bash
-   npm ci
-   ```
-
-3. **Test the Application**
-   ```bash
-   npm run preview
-   ```
-   - Open a browser and navigate to `http://localhost:4321`
-   - Verify the scoreboard loads correctly
-   - Press `Ctrl+C` to stop the server
-
-### Step 5: Create Desktop Shortcut
-
-1. **Create Desktop Directory (if needed)**
-   ```bash
-   mkdir -p ~/Desktop
-   ```
-
-2. **Create Scoreboard Desktop Shortcut**
-   ```bash
-   cat > ~/Desktop/table-tennis-scoreboard.desktop << 'EOF'
-   [Desktop Entry]
-   Version=1.0
-   Type=Application
-   Name=Table Tennis Scoreboard
-   Comment=Launch Table Tennis Scoreboard in Fullscreen
-   Exec=/bin/bash -c 'cd ~/table-tennis-scoreboard && npm run preview > /dev/null 2>&1 & sleep 3 && chromium-browser --start-fullscreen --no-first-run --disable-session-crashed-bubble --disable-infobars --noerrdialogs --app=http://localhost:4321'
-   Icon=applications-games
-   Terminal=false
-   Categories=Game;Sports;
-   StartupNotify=true
-   EOF
-   ```
-
-3. **Make Desktop Shortcut Executable**
-   ```bash
-   chmod +x ~/Desktop/table-tennis-scoreboard.desktop
-   ```
-
-4. **Test Desktop Shortcut**
-   - Double-click the "Table Tennis Scoreboard" icon on desktop
-   - The application should start in fullscreen mode
-   - Press `F11` to exit fullscreen if needed
-
-### Step 6: Configure Chromium Fullscreen Mode
-
-1. **Create Startup Script**
-   ```bash
-   cat > ~/start-scoreboard.sh << 'EOF'
-   #!/bin/bash
-   
-   # Configuration
-   APP_DIR="$HOME/table-tennis-scoreboard"
-   PORT="4321"
-   URL="http://localhost:${PORT}"
-   
-   echo "Starting Table Tennis Scoreboard..."
-   
-   # Change to app directory
-   cd "$APP_DIR" || exit 1
-   
-   # Start the server in background
-   npm run preview > /dev/null 2>&1 &
-   SERVER_PID=$!
-   
-   # Wait for server to be ready
-   echo "Waiting for server to start..."
-   for i in {1..30}; do
-       if curl -s "$URL" > /dev/null 2>&1; then
-           echo "Server is ready!"
-           break
-       fi
-       sleep 1
-   done
-   
-   # Launch Chromium in fullscreen
-   echo "Launching Chromium in fullscreen mode..."
-   chromium-browser \
-       --start-fullscreen \
-       --no-first-run \
-       --disable-session-crashed-bubble \
-       --disable-infobars \
-       --noerrdialogs \
-       --disable-translate \
-       --disable-features=TranslateUI \
-       --app="$URL"
-   
-   # Clean up: kill server when Chromium closes
-   kill $SERVER_PID 2>/dev/null
-   EOF
-   ```
-
-2. **Make Script Executable**
-   ```bash
-   chmod +x ~/start-scoreboard.sh
-   ```
-
-### Step 7: Auto-Start on Boot (Optional)
-
-1. **Create Autostart Directory**
-   ```bash
-   mkdir -p ~/.config/autostart
-   ```
-
-2. **Create Autostart Entry**
-   ```bash
-   cat > ~/.config/autostart/table-tennis-scoreboard.desktop << 'EOF'
-   [Desktop Entry]
-   Type=Application
-   Name=Table Tennis Scoreboard Autostart
-   Comment=Automatically start Table Tennis Scoreboard on login
-   Exec=/bin/bash /home/pi/start-scoreboard.sh
-   Terminal=false
-   Categories=Utility;
-   X-GNOME-Autostart-enabled=true
-   Hidden=false
-   NoDisplay=false
-   EOF
-   ```
-
-3. **Test Autostart**
-   ```bash
-   sudo reboot
-   ```
-   - After reboot, the scoreboard should automatically start in fullscreen
-   - If it doesn't work, check the script permissions and paths
-
-### Step 8: Chromium Fullscreen Configuration
-
-#### Fullscreen Controls
-- **Exit Fullscreen**: Press `F11`
-- **Refresh Page**: Press `F5` or `Ctrl+R`
-- **Close Application**: Press `Alt+F4`
-- **Open Developer Tools**: Press `F12` (for debugging)
-
-#### Advanced Chromium Options
-For a more kiosk-like experience, you can modify the Chromium launch command:
+SSH into your Pi and run:
 
 ```bash
-chromium-browser \
-    --start-fullscreen \
-    --kiosk \
-    --no-first-run \
-    --disable-session-crashed-bubble \
-    --disable-infobars \
-    --noerrdialogs \
-    --disable-translate \
-    --disable-features=TranslateUI \
-    --disable-web-security \
-    --disable-features=VizDisplayCompositor \
-    --app="http://localhost:4321"
+sudo apt update && sudo apt upgrade -y
+sudo apt install git curl -y
 ```
 
-#### Disable Screen Blanking (Optional)
-To prevent the screen from going blank:
+## Step 3 — Install Node.js
+
+Astro requires Node 18+ (Node 20 recommended):
 
 ```bash
-# Disable screen blanking
-sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
-```
-
-Add these lines:
-```
-@xset s off
-@xset -dpms
-@xset s noblank
-```
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Server won't start**
-```bash
-# Check if port is in use
-sudo lsof -i :4321
-
-# Kill existing processes
-pkill -f "npm run preview"
-```
-
-**Chromium won't go fullscreen**
-```bash
-# Try alternative command
-chromium --start-fullscreen --app=http://localhost:4321
-```
-
-**Permission denied errors**
-```bash
-# Fix script permissions
-chmod +x ~/start-scoreboard.sh
-chmod +x ~/Desktop/table-tennis-scoreboard.desktop
-```
-
-**Node.js version issues**
-```bash
-# Check Node.js version
-node --version
-
-# If version is too old, reinstall Node.js 20+
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 ```
 
-### Remote Management
+Check versions:
 
-#### SSH Access
 ```bash
-# Connect from another computer
-ssh pi@<raspberry-pi-ip-address>
-
-# Start scoreboard remotely
-ssh pi@<raspberry-pi-ip-address> 'bash ~/start-scoreboard.sh'
+node -v
+npm -v
 ```
 
-#### Remote Updates
+## Step 4 — Clone your Astro scoreboard and build
+
 ```bash
-# Update application remotely
-ssh pi@<raspberry-pi-ip-address> 'cd ~/table-tennis-scoreboard && git pull && npm ci'
+cd ~
+git clone https://github.com/nastynorm/table-tennis-scoreboard.git
+cd table-tennis-scoreboard
+npm install
+npm run build
 ```
 
-## 🎮 Using the Scoreboard
+Important: `npm run build` produces a `dist/` folder with static files.
+The server will serve this folder, and Chromium will open it.
 
-### Match Types
-- **Singles**: Individual player matches
-- **Doubles**: Team matches (2v2)
-- **7-Match League**: Complete tournament format
-  - 3 Singles matches (H1 vs V1, H2 vs V2, H3 vs V3)
-  - 1 Doubles match (Doubles-H vs Doubles-V)
-  - 3 Cross-singles (H1 vs V2, H3 vs V1, H2 vs V3)
+## Step 5 — Install a lightweight static server
 
-### Controls
-- **Touch/Click**: Score points for each player
-- **Setup**: Configure match settings
-- **Help**: View instructions and rules
-- **New Match**: Start fresh match
-
-## 🛠️ Development
-
-### Project Structure
-```
-├── src/
-│   ├── components/          # React/Solid components
-│   ├── layouts/            # Page layouts
-│   ├── pages/              # Application pages
-│   └── styles/             # CSS and styling
-├── public/                 # Static assets
-├── tests/                  # E2E tests
-└── scripts/               # Build and deployment scripts
-```
-
-### Technologies Used
-- **[Astro](https://astro.build/)** - Static site generator
-- **[Solid.js](https://www.solidjs.com/)** - Reactive UI framework
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS
-- **[TypeScript](https://www.typescriptlang.org/)** - Type safety
-- **[Playwright](https://playwright.dev/)** - E2E testing
-
-### Running Tests
 ```bash
-# Run end-to-end tests
-npm run test:e2e
+sudo npm install -g serve
 ```
 
-### Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Test the server:
 
-## 📄 License
+```bash
+serve -s dist -l 3000
+```
 
-This project is open source and available under the [MIT License](LICENSE).
+Open another terminal (or SSH from another machine) and check:
 
-## 🆘 Support
+`http://<pi-ip>:3000`
 
-- **Issues**: Report bugs on [GitHub Issues](https://github.com/nastynorm/table-tennis-scoreboard/issues)
-- **Discussions**: Join conversations on [GitHub Discussions](https://github.com/nastynorm/table-tennis-scoreboard/discussions)
-- **Documentation**: Additional guides in the `/docs` folder
+If you see “site can’t be reached”, the server might not be running or the port is blocked.
 
----
+## Step 6 — Install minimal GUI + Chromium
 
-**Made with ❤️ for the table tennis community**
+```bash
+sudo apt install --no-install-recommends \
+  xserver-xorg x11-xserver-utils xinit openbox chromium-browser unclutter -y
+```
+
+- `xserver-xorg` → basic graphical system
+- `openbox` → lightweight window manager
+- `chromium-browser` → browser
+- `unclutter` → hides the cursor
+
+## Step 7 — Configure Openbox autostart
+
+Create Openbox autostart folder and file:
+
+```bash
+mkdir -p ~/.config/openbox
+nano ~/.config/openbox/autostart
+```
+
+Paste:
+
+```bash
+# Disable screen blanking
+xset -dpms
+xset s off
+xset s noblank
+
+# Hide mouse cursor
+unclutter &
+
+# Give server a few seconds to start
+sleep 5
+
+# Launch Chromium in kiosk mode pointing to local scoreboard
+chromium-browser --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000
+```
+
+Make executable:
+
+```bash
+chmod +x ~/.config/openbox/autostart
+```
+
+## Step 8 — Auto-start X on boot
+
+Edit `.bash_profile`:
+
+```bash
+nano ~/.bash_profile
+```
+
+Add at the end:
+
+```bash
+# Start X automatically on tty1
+[[ -z $DISPLAY && $(tty) = /dev/tty1 ]] && startx
+```
+
+This ensures Openbox + Chromium start when Pi boots and logs in.
+
+## Step 9 — Auto-start the scoreboard server
+
+Create a systemd service for `serve`:
+
+```bash
+sudo nano /etc/systemd/system/scoreboard.service
+```
+
+Paste:
+
+```ini
+[Unit]
+Description=Table Tennis Scoreboard Server
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/table-tennis-scoreboard
+ExecStart=/usr/bin/serve -s dist -l 3000
+Restart=always
+User=pi
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+
+```bash
+sudo systemctl enable scoreboard.service
+sudo systemctl start scoreboard.service
+sudo systemctl status scoreboard.service
+```
+
+Check that the service is running without errors.
+If status shows active (running), the server is ready.
+
+## Step 10 — Enable auto-login
+
+Make sure Pi logs in automatically so `.bash_profile` can launch X:
+
+```bash
+sudo raspi-config
+```
+
+Navigate:
+
+System Options → Boot / Auto Login → Console Autologin
+
+## Step 11 — Reboot and test
+
+```bash
+sudo reboot
+```
+
+Pi boots → auto-login → X/Openbox → Chromium kiosk mode → `http://localhost:3000`.
+Scoreboard should be visible automatically.
+
+If Chromium shows “site can’t be reached”, it usually means the `serve` server hasn’t started in time. The `sleep 5` in autostart may need to be increased to `sleep 10`.
+
+## Step 12 — Optional tweaks for stability
+
+Increase delay in autostart:
+
+```bash
+sleep 10
+```
+
+Restart Chromium automatically if it crashes:
+
+```bash
+chromium-browser --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000 --incognito
+```
+
+Disable unused services to save memory on Pi Zero 2 W:
+
+```bash
+sudo systemctl disable bluetooth
+sudo systemctl disable hciuart
+```
+
+## ✅ Result
+
+Pi Zero 2 W boots directly into your table tennis scoreboard in full-screen Chromium, running locally with `serve`. No manual commands needed after boot.
+
+I can also provide a single ready-to-copy autostart + systemd + sleep timing config that’s guaranteed to work on Pi Zero 2 W — so you just flash, clone, and reboot.
+
+## Add On-Screen Keyboard
+
+```bash
+sudo apt update
+sudo apt install matchbox-keyboard -y
+```
+
+Edit your Openbox autostart file:
+
+```bash
+nano ~/.config/openbox/autostart
+```
+
+Example with Chromium + matchbox keyboard:
+
+```bash
+# Disable screen blanking
+xset -dpms
+xset s off
+xset s noblank
+
+# Hide mouse cursor
+unclutter &
+
+# Launch Chromium in kiosk mode
+chromium-browser --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000 &
+
+# Launch on-screen keyboard
+matchbox-keyboard &
+```
+
+The `&` ensures both programs run in parallel.
+
+Optional tweaks for usability:
+
+Resize keyboard: You can set size via `-x` and `-y` flags:
+
+```bash
+matchbox-keyboard -x 800 -y 200 &
+```
+
+Hide keyboard at startup and show on focus: `matchbox-keyboard` doesn’t do this automatically; you can use shortcuts or a toggle button in Chromium (JS-based virtual keyboard) if you want more control.
 
 
