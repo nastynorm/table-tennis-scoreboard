@@ -54,26 +54,26 @@ export default function LeagueOver(props: LeagueOverProps) {
       </div>
       <section class="flex px-4 max-w-2xl -mt-12 mx-auto justify-center space-x-8">
         <div class="text-center">
-          <div class="text-xl font-sports mb-4 text-blue-800">
-            {props.matchState.homeTeamName || "Home Team"}
-          </div>
           <div
             class="text-[15rem] tracking-wider font-seven md:text-[21rem]"
             data-testid="home-team-score"
           >
             {props.matchState.homeTeamScore}
           </div>
+          <div class="text-xl font-sports mt-4 text-blue-800">
+            {props.matchState.homeTeamName || "Home Team"}
+          </div>
         </div>
         <div class="text-[15rem] md:text-[21rem] font-seven">-</div>
         <div class="text-center">
-          <div class="text-xl font-sports mb-4 text-red-800">
-            {props.matchState.visitorTeamName || "Visitor Team"}
-          </div>
           <div
             class="text-[15rem] font-seven tracking-wider md:text-[21rem]"
             data-testid="visitor-team-score"
           >
             {props.matchState.visitorTeamScore}
+          </div>
+          <div class="text-xl font-sports mt-4 text-red-800">
+            {props.matchState.visitorTeamName || "Visitor Team"}
           </div>
         </div>
       </section>

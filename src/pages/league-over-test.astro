@@ -1,0 +1,39 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="League Over Test">
+  <div id="league-over-container"></div>
+  
+  <script>
+    import LeagueOver from '../components/LeagueOver.tsx';
+    import { render } from 'solid-js/web';
+
+    // Mock match state data to show the LeagueOver component
+    const mockMatchState = {
+      homeTeamName: "Home Team",
+      visitorTeamName: "Visitor Team", 
+      homeTeamScore: 6,
+      visitorTeamScore: 1,
+      player1: { name: "Player 1", score: 0, games: 0 },
+      player2: { name: "Player 2", score: 0, games: 0 },
+      currentMatchNumber: 7,
+      totalMatches: 7,
+      gameLog: [],
+      swapped: false
+    };
+
+    const mockNewMatch = () => {
+      console.log("New match clicked");
+    };
+
+    // Render the LeagueOver component
+    const container = document.getElementById('league-over-container');
+    if (container) {
+      render(() => LeagueOver({ 
+        matchState: mockMatchState, 
+        newMatch: mockNewMatch 
+      }), container);
+    }
+  </script>
+</Layout>
