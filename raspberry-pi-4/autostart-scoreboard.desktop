@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Table Tennis Scoreboard (Auto-start)
+Comment=Automatically start the Table Tennis Scoreboard on boot
+Exec=/home/pi/start-scoreboard.sh
+Terminal=false
+Categories=Game;Sports;
+X-GNOME-Autostart-enabled=true
+Icon=/home/pi/table-tennis-scoreboard/public/android-chrome-192x192.png
