@@ -1,0 +1,99 @@
+# ULTRA-AGGRESSIVE Dual Display Configuration
+# Completely bypasses ALL display negotiation
+# Forces EXACT resolutions with no compromise
+
+# Disable ALL automatic detection
+disable_fw_kms_setup=1
+dtoverlay=vc4-kms-v3d,noaudio
+
+# Force dual framebuffers
+max_framebuffers=2
+
+# HDMI 0 - Big Monitor (1280x768) - NUCLEAR OPTION
+hdmi_group:0=2
+hdmi_mode:0=87
+hdmi_cvt:0=1280 768 60 6 0 0 0
+hdmi_drive:0=2
+hdmi_force_hotplug:0=1
+hdmi_ignore_edid:0=0xa5000080
+hdmi_force_mode:0=1
+hdmi_ignore_cec_init:0=1
+hdmi_ignore_cec:0=1
+hdmi_ignore_hotplug:0=1
+edid_content_type:0=0
+
+# HDMI 1 - Waveshare (800x480) - NUCLEAR OPTION  
+hdmi_group:1=2
+hdmi_mode:1=87
+hdmi_cvt:1=800 480 60 6 0 0 0
+hdmi_drive:1=2
+hdmi_force_hotplug:1=1
+hdmi_ignore_edid:1=0xa5000080
+hdmi_force_mode:1=1
+hdmi_ignore_cec_init:1=1
+hdmi_ignore_cec:1=1
+hdmi_ignore_hotplug:1=1
+edid_content_type:1=0
+
+# FORCE exact pixel timings - NO NEGOTIATION
+hdmi_timings:0=1280 0 110 40 220 768 0 5 5 20 0 0 0 60 0 79500000 3
+hdmi_timings:1=800 0 40 48 88 480 0 13 3 32 0 0 0 60 0 30000000 3
+
+# Completely disable any scaling or adjustment
+scaling_kernel:0=0
+scaling_kernel:1=0
+overscan_left:0=0
+overscan_right:0=0
+overscan_top:0=0
+overscan_bottom:0=0
+overscan_left:1=0
+overscan_right:1=0
+overscan_top:1=0
+overscan_bottom:1=1
+
+# GPU settings - MAXIMUM power
+gpu_mem=512
+arm_freq=2000
+gpu_freq=750
+over_voltage=6
+
+# Framebuffer - Lock to big monitor
+framebuffer_width=1280
+framebuffer_height=768
+framebuffer_depth=32
+framebuffer_ignore_alpha=1
+
+# Display memory allocation
+max_framebuffer_width=1280
+max_framebuffer_height=768
+
+# Force HDMI boost to maximum
+config_hdmi_boost:0=11
+config_hdmi_boost:1=11
+
+# Disable ALL safety features
+hdmi_safe:0=0
+hdmi_safe:1=0
+avoid_safe_mode=1
+
+# Pixel frequency limits
+hdmi_pixel_freq_limit:0=600000000
+hdmi_pixel_freq_limit:1=600000000
+
+# Touch controller for Waveshare
+dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900
+dtparam=spi=on
+
+# Audio to big monitor
+hdmi_drive:0=2
+audio_pwm_mode=2
+
+# 64-bit mode
+arm_64bit=1
+
+# Disable power management that might affect displays
+disable_poe_fan=1
+temp_limit=85
+
+# Force display order
+display_default_lcd=0
