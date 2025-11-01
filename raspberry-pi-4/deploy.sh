@@ -166,58 +166,9 @@ exec openbox-session
 EOF
 fi
 
-# Step 10 — Configure dual HDMI displays (Pi 4 optimization)
-log "Configuring dual HDMI displays for Pi 4..."
-BOOT_CONFIG="/boot/config.txt"
-FIRMWARE_CONFIG="/boot/firmware/config.txt"
-
-# Determine correct config file location
-CONFIG_FILE=""
-if [ -f "$BOOT_CONFIG" ]; then
-  CONFIG_FILE="$BOOT_CONFIG"
-elif [ -f "$FIRMWARE_CONFIG" ]; then
-  CONFIG_FILE="$FIRMWARE_CONFIG"
-else
-  log "WARNING: Could not find boot config file. Skipping display configuration."
-fi
-
-if [ -n "$CONFIG_FILE" ]; then
-  log "Backing up existing config: ${CONFIG_FILE}.backup"
-  sudo cp "$CONFIG_FILE" "${CONFIG_FILE}.backup"
-  
-  # Remove any existing dual HDMI configuration
-  sudo sed -i '/# Dual HDMI Configuration/,/# End Dual HDMI Configuration/d' "$CONFIG_FILE"
-  
-  # Add dual HDMI configuration
-  sudo bash -c "cat >> '$CONFIG_FILE'" <<'EOF'
-
-# Dual HDMI Configuration for Table Tennis Scoreboard
-# HDMI 0: 800x480 (Primary scoreboard display)
-# HDMI 1: 1280x768 (Secondary/control display)
-max_framebuffers=2
-hdmi_group:0=2
-hdmi_mode:0=87
-hdmi_cvt:0=800 480 60 6 0 0 0
-hdmi_drive:0=2
-hdmi_group:1=2
-hdmi_mode:1=87
-hdmi_cvt:1=1280 768 60 6 0 0 0
-hdmi_drive:1=2
-hdmi_force_hotplug:0=1
-hdmi_force_hotplug:1=1
-gpu_mem=128
-disable_overscan=1
-dtoverlay=vc4-kms-v3d
-max_framebuffer_width=1280
-max_framebuffer_height=768
-arm_freq=1500
-gpu_freq=500
-over_voltage=2
-arm_64bit=1
-# End Dual HDMI Configuration
-EOF
-  log "Dual HDMI configuration added to $CONFIG_FILE"
-fi
+# Step 10 — Basic display configuration (default)
+log "Using default display configuration..."
+# No custom display modifications - using Raspberry Pi defaults
 
 # Step 11 — Configure console autologin (non-interactive)
 log "Configuring console autologin for user 'pi' on tty1..."
