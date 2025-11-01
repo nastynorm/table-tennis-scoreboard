@@ -1,0 +1,52 @@
+# Raspberry Pi 4 Configuration for Waveshare 5-inch HDMI LCD
+# Optimized for Table Tennis Scoreboard with Waveshare 5" display + XPT2046 touch
+# Display: 800x480 resolution
+# Touch: XPT2046 touch controller
+
+# Basic HDMI Configuration for Waveshare 5-inch
+hdmi_group=2
+hdmi_mode=87
+hdmi_cvt=800 480 60 6 0 0 0
+hdmi_drive=2
+hdmi_force_hotplug=1
+
+# GPU memory allocation (important for smooth graphics)
+gpu_mem=128
+
+# Disable overscan for pixel-perfect display
+disable_overscan=1
+
+# Enable hardware acceleration
+dtoverlay=vc4-kms-v3d
+max_framebuffer_width=800
+max_framebuffer_height=480
+
+# XPT2046 Touch Controller Configuration
+dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900
+
+# SPI interface for touch (required for XPT2046)
+dtparam=spi=on
+
+# Audio configuration
+hdmi_drive=2
+audio_pwm_mode=2
+
+# Performance optimizations for Pi 4
+arm_freq=1500
+gpu_freq=500
+over_voltage=2
+
+# Enable 64-bit mode
+arm_64bit=1
+
+# Display timing optimizations
+hdmi_pixel_freq_limit=400000000
+
+# Framebuffer configuration
+framebuffer_width=800
+framebuffer_height=480
+
+# Additional touch calibration parameters
+# These may need adjustment based on your specific screen
+# Uncomment and modify if touch is not accurate:
+# dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=1,pmax=255,xohms=150,xmin=300,xmax=3800,ymin=700,ymax=3400
