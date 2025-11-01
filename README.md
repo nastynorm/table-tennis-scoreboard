@@ -1,10 +1,10 @@
-# Raspberry Pi Zero 2 W: Table Tennis Scoreboard Kiosk Setup
+# Raspberry Pi 4: Table Tennis Scoreboard Kiosk Setup
 
 Goal
 
 - Serve your Astro scoreboard locally on the Pi.
 - Launch Chromium in full-screen kiosk mode displaying it on boot.
-- Work reliably on a Pi Zero 2 W with minimal overhead.
+- Work reliably on a Pi 4 with optimal performance and dual display support.
 
 ## Step 1 — Install Raspberry Pi OS Lite (64-bit)
 
@@ -205,7 +205,7 @@ Restart Chromium automatically if it crashes:
 chromium-browser --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000 --incognito
 ```
 
-Disable unused services to save memory on Pi Zero 2 W:
+Optional: Disable unused services for minimal setup:
 
 ```bash
 sudo systemctl disable bluetooth
@@ -214,9 +214,9 @@ sudo systemctl disable hciuart
 
 ## ✅ Result
 
-Pi Zero 2 W boots directly into your table tennis scoreboard in full-screen Chromium, running locally with `serve`. No manual commands needed after boot.
+Pi 4 boots directly into your table tennis scoreboard in full-screen Chromium, running locally with `serve`. No manual commands needed after boot.
 
-I can also provide a single ready-to-copy autostart + systemd + sleep timing config that’s guaranteed to work on Pi Zero 2 W — so you just flash, clone, and reboot.
+The Pi 4 setup includes optimized configurations for dual display support and enhanced performance. Check the `raspberry-pi-4/` directory for advanced setup options including dual HDMI configurations.
 
 ## Add On-Screen Keyboard
 

@@ -14,7 +14,7 @@ This guide provides optimized configuration for running the Table Tennis Scorebo
 Run the enhanced deploy script that includes dual display configuration:
 
 ```bash
-bash raspberry-pi-zero2w/deploy.sh
+bash raspberry-pi-4/deploy.sh
 ```
 
 This will automatically:
@@ -28,7 +28,7 @@ This will automatically:
 If you only want to configure the displays:
 
 ```bash
-bash raspberry-pi-zero2w/setup-dual-displays.sh --apply
+bash raspberry-pi-4/setup-dual-displays.sh --apply
 ```
 
 ## Files Included
@@ -79,7 +79,7 @@ arm_64bit=1
 ### Test Display Configuration
 
 ```bash
-bash raspberry-pi-zero2w/setup-dual-displays.sh --test
+bash raspberry-pi-4/setup-dual-displays.sh --test
 ```
 
 This will check:
@@ -127,7 +127,7 @@ xrandr
 If you need to restore the original configuration:
 
 ```bash
-bash raspberry-pi-zero2w/setup-dual-displays.sh --restore
+bash raspberry-pi-4/setup-dual-displays.sh --restore
 ```
 
 ## Advanced Configuration

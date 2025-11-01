@@ -1,9 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Table Tennis Scoreboard (Auto-start)
-Comment=Automatically start the Table Tennis Scoreboard on boot
-Exec=/home/pi/start-scoreboard.sh
+Name=Scoreboard (Chromium Fullscreen)
+Comment=Start the scoreboard server and open Chromium in fullscreen
+Exec=/bin/bash -lc 'bash "$HOME/start-scoreboard-chromium.sh"'
 Terminal=false
-Categories=Game;Sports;
+Categories=Utility;
 X-GNOME-Autostart-enabled=true
-Icon=/home/pi/table-tennis-scoreboard/public/android-chrome-192x192.png
