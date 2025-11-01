@@ -63,7 +63,11 @@ log "serve binary: $SERVE_BIN"
 # Step 6 — Install minimal GUI + Chromium
 log "Installing minimal X + Openbox + Chromium + unclutter..."
 sudo apt install --no-install-recommends -y \
-  xserver-xorg x11-xserver-utils xinit openbox chromium-browser unclutter
+  xserver-xorg x11-xserver-utils xinit openbox chromium unclutter
+
+# Step 6.1 — Install on-screen keyboard for touchscreen support
+log "Installing on-screen keyboard for touchscreen..."
+sudo apt install --no-install-recommends -y matchbox-keyboard onboard
 
 # Step 7 — Configure Openbox autostart
 log "Configuring Openbox autostart..."
@@ -81,9 +85,38 @@ unclutter &
 sleep 5
 
 # Launch Chromium in kiosk mode pointing to local scoreboard
-chromium-browser --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000
+chromium --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000
 EOF
 chmod +x "$HOME/.config/openbox/autostart"
+
+# Step 8 — Create keyboard launcher script for touchscreen
+log "Creating keyboard launcher script..."
+cat > "$HOME/start-keyboard.sh" <<'EOF'
+#!/bin/bash
+# On-screen keyboard launcher for touchscreen
+# Usage: ./start-keyboard.sh [matchbox|onboard]
+
+KEYBOARD=${1:-matchbox}
+
+case $KEYBOARD in
+  matchbox)
+    echo "Starting Matchbox keyboard..."
+    matchbox-keyboard &
+    ;;
+  onboard)
+    echo "Starting Onboard keyboard..."
+    onboard &
+    ;;
+  *)
+    echo "Usage: $0 [matchbox|onboard]"
+    echo "Available keyboards:"
+    echo "  matchbox - Simple, lightweight keyboard"
+    echo "  onboard  - Feature-rich keyboard with themes"
+    exit 1
+    ;;
+esac
+EOF
+chmod +x "$HOME/start-keyboard.sh"
 
 # Step 9 — Auto-start the scoreboard server (systemd service)
 log "Creating systemd service for serve (scoreboard.service)..."
