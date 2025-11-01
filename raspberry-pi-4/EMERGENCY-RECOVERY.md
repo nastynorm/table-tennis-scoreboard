@@ -100,7 +100,7 @@ sudo systemctl status table-tennis-scoreboard
 sudo systemctl start table-tennis-scoreboard
 
 # Test in browser
-DISPLAY=:0 chromium-browser --kiosk http://localhost:3000 &
+DISPLAY=:0 chromium --kiosk http://localhost:3000 &
 ```
 
 ---

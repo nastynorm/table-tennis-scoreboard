@@ -59,7 +59,7 @@ export DISPLAY=:0
 startx &
 
 # If X starts, try launching Chromium
-DISPLAY=:0 chromium-browser --kiosk http://localhost:3000 &
+DISPLAY=:0 chromium --kiosk http://localhost:3000 &
 ```
 
 ### **Check Autostart Configuration**
@@ -129,7 +129,7 @@ unclutter &
 sleep 10
 
 # Launch Chromium in kiosk mode
-chromium-browser --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000 --incognito &
+chromium --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000 --incognito &
 EOF
 ```
 

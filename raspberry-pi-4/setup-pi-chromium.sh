@@ -49,12 +49,12 @@ if ! command -v curl >/dev/null 2>&1; then
 fi
 
 # Install Chromium (browser)
-if command -v chromium-browser >/dev/null 2>&1 || command -v chromium >/dev/null 2>&1; then
+if command -v chromium >/dev/null 2>&1 || command -v chromium-browser >/dev/null 2>&1; then
   log "Chromium already installed."
 else
   log "Installing Chromium..."
-  sudo apt install -y chromium-browser || sudo apt install -y chromium || {
-    log "ERROR: Chromium installation failed. Try: sudo apt install chromium-browser"; exit 1;
+  sudo apt install -y chromium || sudo apt install -y chromium-browser || {
+    log "ERROR: Chromium installation failed. Try: sudo apt install chromium"; exit 1;
   }
 fi
 
@@ -112,10 +112,10 @@ done
 
 # Determine Chromium command
 CHROMIUM_CMD=""
-if command -v chromium-browser >/dev/null 2>&1; then
-  CHROMIUM_CMD="chromium-browser"
-elif command -v chromium >/dev/null 2>&1; then
+if command -v chromium >/dev/null 2>&1; then
   CHROMIUM_CMD="chromium"
+elif command -v chromium-browser >/dev/null 2>&1; then
+  CHROMIUM_CMD="chromium-browser"
 else
   log "ERROR: Chromium not found after install."
   exit 1

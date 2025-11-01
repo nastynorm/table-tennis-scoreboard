@@ -51,7 +51,7 @@ fi
 check_status "X Server running"
 
 echo -e "${YELLOW}Step 5: Testing Chromium${NC}"
-DISPLAY=:0 chromium-browser --version > /dev/null 2>&1
+DISPLAY=:0 chromium --version > /dev/null 2>&1
 check_status "Chromium browser available"
 
 echo -e "${YELLOW}Step 6: Testing Node.js${NC}"
@@ -84,8 +84,8 @@ echo ""
 echo "🎯 Quick Test Commands:"
 echo "======================"
 echo "Test display:     DISPLAY=:0 xeyes"
-echo "Test browser:     DISPLAY=:0 chromium-browser http://localhost:3000"
-echo "Test kiosk mode:  DISPLAY=:0 chromium-browser --kiosk http://localhost:3000"
+echo "Test browser:     DISPLAY=:0 chromium http://localhost:3000"
+echo "Test kiosk mode:  DISPLAY=:0 chromium --kiosk http://localhost:3000"
 echo "Check WiFi:       iwconfig"
 echo "Check services:   sudo systemctl status table-tennis-scoreboard"
 

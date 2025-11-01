@@ -44,25 +44,25 @@ for i in $(seq 1 60); do
   fi
 done
 
-# Pick Chromium command name (varies by OS version)
+# Pick Chromium command name (prefer chromium over chromium-browser)
 CHROMIUM_CMD=""
-if command -v chromium-browser >/dev/null 2>&1; then
-  CHROMIUM_CMD="chromium-browser"
-elif command -v chromium >/dev/null 2>&1; then
+if command -v chromium >/dev/null 2>&1; then
   CHROMIUM_CMD="chromium"
+elif command -v chromium-browser >/dev/null 2>&1; then
+  CHROMIUM_CMD="chromium-browser"
 fi
 
 if [ -z "$CHROMIUM_CMD" ]; then
   log "Chromium not found. Installing..."
   sudo apt update
-  sudo apt install -y chromium-browser || sudo apt install -y chromium || true
-  if command -v chromium-browser >/dev/null 2>&1; then
-    CHROMIUM_CMD="chromium-browser"
-  elif command -v chromium >/dev/null 2>&1; then
+  sudo apt install -y chromium || sudo apt install -y chromium-browser || true
+  if command -v chromium >/dev/null 2>&1; then
     CHROMIUM_CMD="chromium"
+  elif command -v chromium-browser >/dev/null 2>&1; then
+    CHROMIUM_CMD="chromium-browser"
   else
     log "ERROR: Could not install Chromium automatically."
-    log "Install manually: sudo apt install chromium-browser (or chromium)"
+    log "Install manually: sudo apt install chromium (or chromium-browser)"
     exit 1
   fi
 fi

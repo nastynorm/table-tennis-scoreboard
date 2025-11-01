@@ -171,7 +171,7 @@ if command -v xrandr >/dev/null 2>&1; then
 fi
 
 # Launch Chromium in kiosk mode on primary display (HDMI 0)
-DISPLAY=:0.0 chromium-browser --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000
+DISPLAY=:0.0 chromium --noerrdialogs --disable-infobars --disable-gpu --kiosk http://localhost:3000
 EOF
   chmod +x "$HOME/.config/openbox/autostart"
   log "Chromium dual display configuration updated."
