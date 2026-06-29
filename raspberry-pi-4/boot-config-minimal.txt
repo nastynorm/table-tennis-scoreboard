@@ -1,0 +1,48 @@
+# Minimal Pi 4 Boot Configuration - Emergency Recovery
+# Use this if you're getting blank screen with cursor
+# Copy this to /boot/config.txt to fix display issues
+
+# Basic GPU and memory settings
+gpu_mem=128
+start_x=1
+
+# Force HDMI output (fixes most blank screen issues)
+hdmi_force_hotplug=1
+hdmi_drive=2
+config_hdmi_boost=4
+
+# Use safe HDMI mode (1920x1080 60Hz)
+hdmi_group=1
+hdmi_mode=16
+
+# Disable overscan
+disable_overscan=1
+
+# Audio settings
+dtparam=audio=on
+
+# Enable VC4 graphics driver
+dtoverlay=vc4-kms-v3d
+max_framebuffers=2
+
+# Basic performance settings
+arm_freq=1500
+gpu_freq=500
+over_voltage=2
+
+# Ensure HDMI is always on
+hdmi_blanking=1
+
+# Basic camera and SPI settings
+camera_auto_detect=1
+display_auto_detect=1
+
+# Enable I2C and SPI
+dtparam=i2c_arm=on
+dtparam=spi=on
+
+[cm4]
+# Enable host mode on the 2711 built-in XHCI USB controller.
+dtoverlay=dwc2,dr_mode=host
+
+[all]

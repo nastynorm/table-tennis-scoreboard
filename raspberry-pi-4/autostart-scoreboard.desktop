@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Scoreboard (Chromium Fullscreen)
+Comment=Start the scoreboard server and open Chromium in fullscreen
+Exec=/bin/bash -lc 'bash "$HOME/start-scoreboard-chromium.sh"'
+Terminal=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true

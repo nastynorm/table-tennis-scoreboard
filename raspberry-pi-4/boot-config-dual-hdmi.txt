@@ -1,0 +1,60 @@
+# Raspberry Pi 4 Dual HDMI Configuration
+# Optimized for Table Tennis Scoreboard with dual displays
+# HDMI 0: 800x480 (Primary scoreboard display)
+# HDMI 1: 1280x768 (Secondary/control display)
+
+# Enable dual HDMI outputs
+max_framebuffers=2
+
+# HDMI 0 Configuration (800x480)
+hdmi_group:0=2
+hdmi_mode:0=87
+hdmi_cvt:0=800 480 60 6 0 0 0
+hdmi_drive:0=2
+
+# HDMI 1 Configuration (1280x768)
+hdmi_group:1=2
+hdmi_mode:1=87
+hdmi_cvt:1=1280 768 60 6 0 0 0
+hdmi_drive:1=2
+
+# Force both HDMI outputs to be active
+hdmi_force_hotplug:0=1
+hdmi_force_hotplug:1=1
+
+# GPU memory split (important for dual displays)
+gpu_mem=128
+
+# Disable overscan for both displays
+disable_overscan=1
+
+# Enable hardware acceleration
+dtoverlay=vc4-kms-v3d
+max_framebuffer_width=1280
+max_framebuffer_height=768
+
+# Audio configuration (HDMI audio on port 0)
+hdmi_drive:0=2
+audio_pwm_mode=2
+
+# Performance optimizations for Pi 4
+arm_freq=1500
+gpu_freq=500
+over_voltage=2
+
+# Enable 64-bit mode
+arm_64bit=1
+
+# Additional display optimizations
+hdmi_pixel_freq_limit:0=400000000
+hdmi_pixel_freq_limit:1=400000000
+
+# Framebuffer configuration
+framebuffer_width=800
+framebuffer_height=480
+framebuffer_depth=32
+framebuffer_ignore_alpha=1
+
+# Display rotation (if needed)
+# display_hdmi_rotate:0=0
+# display_hdmi_rotate:1=0

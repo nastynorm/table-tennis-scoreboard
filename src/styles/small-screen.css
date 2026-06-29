@@ -1,0 +1,12 @@
+/* The live scoreboard is now a fixed, fit-to-viewport layout that sizes the
+   board and buttons explicitly (see PlayingGame + global.css clamps), so we no
+   longer force button min-heights here — that used to override the compact
+   controls on short landscape screens and push content off-screen.
+
+   Only keep a harmless convenience: stack the two players vertically on a
+   genuinely narrow portrait phone. */
+@media screen and (max-width: 540px) and (orientation: portrait) {
+  main.grid.grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}

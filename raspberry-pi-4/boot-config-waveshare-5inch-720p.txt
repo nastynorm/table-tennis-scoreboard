@@ -1,0 +1,65 @@
+# Raspberry Pi 4 Configuration for Waveshare 5-inch HDMI LCD - 720p Output
+# Optimized for Table Tennis Scoreboard with Waveshare 5" display + XPT2046 touch
+# Display: 1280x720 output scaled to 800x480 hardware (720p)
+# Touch: XPT2046 touch controller
+
+# 720p HDMI Configuration for Waveshare 5-inch
+hdmi_group=1
+hdmi_mode=4
+hdmi_drive=2
+hdmi_force_hotplug=1
+
+# Alternative custom 720p timing
+# hdmi_group=2
+# hdmi_mode=87
+# hdmi_cvt=1280 720 60 6 0 0 0
+
+# GPU memory allocation (maximum for high resolution)
+gpu_mem=512
+
+# Disable overscan for pixel-perfect display
+disable_overscan=1
+
+# Enable hardware acceleration with maximum performance
+dtoverlay=vc4-kms-v3d
+max_framebuffer_width=1280
+max_framebuffer_height=720
+
+# XPT2046 Touch Controller Configuration
+dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900
+
+# SPI interface for touch (required for XPT2046)
+dtparam=spi=on
+
+# Audio configuration
+hdmi_drive=2
+audio_pwm_mode=2
+
+# Maximum performance optimizations for Pi 4
+arm_freq=2000
+gpu_freq=750
+over_voltage=6
+force_turbo=1
+
+# Enable 64-bit mode
+arm_64bit=1
+
+# Display timing optimizations (maximum)
+hdmi_pixel_freq_limit=600000000
+
+# Framebuffer configuration (720p)
+framebuffer_width=1280
+framebuffer_height=720
+framebuffer_depth=32
+
+# Force 720p output regardless of display capabilities
+hdmi_ignore_edid=0xa5000080
+hdmi_force_mode=1
+
+# High-quality scaling
+scaling_kernel=8
+hdmi_boost=7
+
+# Additional display optimizations
+config_hdmi_boost=7
+avoid_safe_mode=1

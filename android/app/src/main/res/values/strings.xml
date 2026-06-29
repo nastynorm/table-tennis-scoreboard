@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TT Scoreboard</string>
+    <string name="title_activity_main">TT Scoreboard</string>
+    <string name="package_name">com.steenbergttc.scoreboard</string>
+    <string name="custom_url_scheme">com.steenbergttc.scoreboard</string>
+</resources>

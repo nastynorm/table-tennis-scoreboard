@@ -1,0 +1,88 @@
+# Raspberry Pi 4 Dual Display Configuration
+# Big Monitor (HDMI 0) + Waveshare 5-inch (HDMI 1)
+# Prevents Waveshare from affecting big monitor resolution
+
+# Enable dual HDMI outputs
+max_framebuffers=2
+
+# HDMI 0 Configuration (Big Monitor - 1280x768) - Force exact resolution
+hdmi_group:0=2
+hdmi_mode:0=87
+hdmi_cvt:0=1280 768 60 6 0 0 0
+hdmi_drive:0=2
+hdmi_ignore_edid:0=0xa5000080
+hdmi_force_mode:0=1
+hdmi_ignore_cec_init:0=1
+hdmi_ignore_cec:0=1
+
+# HDMI 1 Configuration (Waveshare 5-inch - 800x480) - Force exact resolution
+hdmi_group:1=2
+hdmi_mode:1=87
+hdmi_cvt:1=800 480 60 6 0 0 0
+hdmi_drive:1=2
+hdmi_ignore_edid:1=0xa5000080
+hdmi_force_mode:1=1
+hdmi_ignore_cec_init:1=1
+hdmi_ignore_cec:1=1
+
+# Force both HDMI outputs to be active
+hdmi_force_hotplug:0=1
+hdmi_force_hotplug:1=1
+
+# Completely disable EDID and force our settings
+edid_content_type:0=0
+edid_content_type:1=0
+
+# Custom timings to prevent resolution negotiation
+hdmi_timings:0=1280 0 40 48 88 768 0 13 3 32 0 0 0 60 0 79500000 3
+hdmi_timings:1=800 0 40 48 88 480 0 13 3 32 0 0 0 60 0 30000000 3
+
+# GPU memory split (important for dual displays)
+gpu_mem=256
+
+# Disable overscan for both displays
+disable_overscan=1
+
+# Enable hardware acceleration
+dtoverlay=vc4-kms-v3d
+max_framebuffer_width=1280
+max_framebuffer_height=768
+
+# XPT2046 Touch Controller Configuration for Waveshare
+dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900
+
+# SPI interface for touch (required for XPT2046)
+dtparam=spi=on
+
+# Audio configuration (HDMI audio on port 0 - big monitor)
+hdmi_drive:0=2
+audio_pwm_mode=2
+
+# Performance optimizations for Pi 4
+arm_freq=1800
+gpu_freq=600
+over_voltage=4
+
+# Enable 64-bit mode
+arm_64bit=1
+
+# Additional display optimizations
+hdmi_pixel_freq_limit:0=400000000
+hdmi_pixel_freq_limit:1=400000000
+
+# Prevent resolution changes and force stable output
+config_hdmi_boost:0=4
+config_hdmi_boost:1=4
+hdmi_safe:0=0
+hdmi_safe:1=0
+avoid_safe_mode=1
+
+# Framebuffer configuration (set to big monitor as primary)
+framebuffer_width=1280
+framebuffer_height=768
+framebuffer_depth=32
+framebuffer_ignore_alpha=1
+
+# Display rotation (if needed)
+# display_hdmi_rotate:0=0
+# display_hdmi_rotate:1=0

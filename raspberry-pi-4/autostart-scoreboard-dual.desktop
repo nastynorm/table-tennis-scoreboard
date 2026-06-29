@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Scoreboard (Dual Display)
+Comment=Auto-launch control on the 5" touch screen and the spectator board on the HDMI monitor
+Exec=/bin/bash -lc 'bash "$HOME/start-scoreboard-dual.sh"'
+Terminal=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true
