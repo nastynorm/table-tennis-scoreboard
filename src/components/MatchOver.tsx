@@ -1,4 +1,4 @@
-import { onCleanup, onMount } from "solid-js";
+import { onCleanup, onMount, Show } from "solid-js";
 import type { MatchState } from "./common";
 
 interface MatchOverProps {
@@ -10,6 +10,12 @@ export default function MatchOver(props: MatchOverProps) {
     props.matchState.player1.games > props.matchState.player2.games
       ? props.matchState.player1.name
       : props.matchState.player2.name;
+
+  // Game-by-game scorelines, oriented to match the standing (player1:player2).
+  const gameScores = () =>
+    props.matchState.gameLog
+      .map((g) => `${g.player1Score}:${g.player2Score}`)
+      .join("  -  ");
 
   const handleKeyUp = (ev: KeyboardEvent) => {
     ev.preventDefault();
@@ -58,6 +64,14 @@ export default function MatchOver(props: MatchOverProps) {
           {props.matchState.player2.games}
         </div>
       </section>
+      <Show when={props.matchState.gameLog.length > 0}>
+        <div
+          class="font-mono font-semibold text-white text-base sm:text-2xl tracking-wide text-center px-4"
+          data-testid="match-game-scores"
+        >
+          {gameScores()}
+        </div>
+      </Show>
       <button
         class="font-mono text-lg md:text-2xl uppercase bg-white text-black rounded-lg shadow-[0_4px_0_0_rgba(0,0,0,0.4)] px-8 py-2 font-bold active:translate-y-1 active:shadow-none transition-all"
         onClick={(e) => {
