@@ -16,8 +16,8 @@ interface PlayerScoreProps {
   onRemoveCard: Function;
   testid: string;
   redNumber: boolean;
-  // Per-game points this player scored in each completed game of the match.
-  gameScores: { points: number; won: boolean }[];
+  // Per-game scoreline from this player's perspective (mine:theirs).
+  gameScores: { mine: number; theirs: number }[];
   // Timeout props
   player: number;
   timeoutsUsed: number;
@@ -123,25 +123,13 @@ export default function PlayerScore(props: PlayerScoreProps) {
         </Show>
       </div>
 
-      {/* Per-game scoreline: this player's points in each completed game */}
+      {/* Per-game scoreline, grouped under this player: 11:0 - 11:3 - 11:5 */}
       <Show when={props.gameScores.length > 0}>
         <div
-          class="shrink-0 flex items-center justify-center flex-wrap gap-1 mt-1"
+          class="shrink-0 text-center mt-1 font-mono font-semibold text-white text-base sm:text-lg tracking-wide leading-none"
           data-testid={`${props.testid}-game-scores`}
         >
-          <For each={props.gameScores}>
-            {(g) => (
-              <span
-                classList={{
-                  "inline-flex items-center justify-center min-w-[1.7rem] px-1.5 py-0.5 rounded-md text-base font-mono font-bold leading-none": true,
-                  "bg-emerald-500 text-white": g.won,
-                  "bg-white/10 text-white/70": !g.won,
-                }}
-              >
-                {g.points}
-              </span>
-            )}
-          </For>
+          {props.gameScores.map((g) => `${g.mine}:${g.theirs}`).join(" - ")}
         </div>
       </Show>
 

@@ -31,7 +31,7 @@ function Side(props: {
   partnerServing: boolean;
   reverse: boolean;
   testid: string;
-  gameScores: { points: number; won: boolean }[];
+  gameScores: { mine: number; theirs: number }[];
 }) {
   return (
     <div
@@ -65,20 +65,8 @@ function Side(props: {
         </div>
       </Show>
       <Show when={props.gameScores.length > 0}>
-        <div class="flex items-center justify-center flex-wrap gap-1 mt-1">
-          <For each={props.gameScores}>
-            {(g) => (
-              <span
-                classList={{
-                  "inline-flex items-center justify-center min-w-[1.7rem] px-1.5 py-0.5 rounded-md text-base font-mono font-bold leading-none": true,
-                  "bg-emerald-500 text-white": g.won,
-                  "bg-white/10 text-white/70": !g.won,
-                }}
-              >
-                {g.points}
-              </span>
-            )}
-          </For>
+        <div class="mt-1 font-mono font-semibold text-white text-base sm:text-lg tracking-wide leading-none text-center">
+          {props.gameScores.map((g) => `${g.mine}:${g.theirs}`).join(" - ")}
         </div>
       </Show>
       <div class="flex items-center justify-center gap-1 mt-2 min-h-[1.75rem]">
@@ -121,11 +109,10 @@ export default function SpectatorBoard(props: SpectatorBoardProps) {
 
   // Per-game scoreline for the player on a given side.
   const scoresFor = (forP1: boolean) =>
-    (s()?.gl ?? []).map((g) => {
-      const mine = forP1 ? g.a : g.b;
-      const theirs = forP1 ? g.b : g.a;
-      return { points: mine, won: mine > theirs };
-    });
+    (s()?.gl ?? []).map((g) => ({
+      mine: forP1 ? g.a : g.b,
+      theirs: forP1 ? g.b : g.a,
+    }));
 
   return (
     <div class="h-[100dvh] overflow-hidden flex flex-col justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-black text-white px-3 sm:px-6">

@@ -325,11 +325,10 @@ export default function PlayingGame(props: PlayingGameProps) {
   // Per-game scoreline for a given player number (1 or 2): the points they
   // scored in each completed game of the current match, with win/loss flag.
   const gameHistory = (playerNo: number) =>
-    props.matchState.gameLog.map((g) => {
-      const mine = playerNo === 1 ? g.player1Score : g.player2Score;
-      const theirs = playerNo === 1 ? g.player2Score : g.player1Score;
-      return { points: mine, won: mine > theirs };
-    });
+    props.matchState.gameLog.map((g) => ({
+      mine: playerNo === 1 ? g.player1Score : g.player2Score,
+      theirs: playerNo === 1 ? g.player2Score : g.player1Score,
+    }));
 
   // Flash the red "corrected" number on whichever player is on a given side.
   const flashSide = (side: "left" | "right") => {
