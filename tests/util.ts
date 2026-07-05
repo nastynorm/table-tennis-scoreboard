@@ -1,5 +1,13 @@
 import { expect, type Page } from "@playwright/test";
 
+// The app now opens on the New Match wizard. Most tests expect the scoreboard,
+// so this starts a default Singles match to land on the board.
+export async function startDefaultMatch(page: Page) {
+  await page.getByTestId("format-singles").click();
+  await page.getByTestId("start-match").click();
+  await expect(page.getByTestId("left-button")).toBeVisible();
+}
+
 export async function setSideScore(
   page: Page,
   side: "left" | "right",

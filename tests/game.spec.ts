@@ -1,11 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { setSideScore } from "./util";
+import { setSideScore, startDefaultMatch } from "./util";
 import { defaultGameConfig } from "../src/components/common";
 
 // TODO: add tests for sides swapped and full match
 test.describe("game", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await startDefaultMatch(page);
   });
   test.describe("gameplay features", () => {
     test("increases left score", async ({ page }) => {

@@ -1,11 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { setSideScore, advanceGame } from "./util";
+import { setSideScore, advanceGame, startDefaultMatch } from "./util";
 
 // Tests for the features added on top of the original logic:
 // serve indicator, yellow cards, cancel timeout, and doubles partner display.
 test.describe("added features", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await startDefaultMatch(page);
   });
 
   test.describe("serve indicator", () => {
@@ -207,11 +208,10 @@ test.describe("added features", () => {
       await page.getByTestId("left-button").click();
       await page.getByTestId("left-button").click();
 
-      // Viewer: a second window in the same browser mirrors via BroadcastChannel
+      // Viewer: a second window in the same browser mirrors via BroadcastChannel.
+      // It opens on the New Match wizard; use the URL shortcut to enter viewer.
       const viewer = await page.context().newPage();
-      await viewer.goto("/");
-      await viewer.getByTestId("menu-button").click();
-      await viewer.getByTestId("view-screen-button").click();
+      await viewer.goto("/?screen=viewer");
       await expect(viewer.getByTestId("spectator-left-score")).toContainText(
         "2",
         { timeout: 4000 },

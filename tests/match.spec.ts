@@ -1,9 +1,10 @@
 import test, { expect } from "@playwright/test";
-import { advanceGame, setSideScore } from "./util";
+import { advanceGame, setSideScore, startDefaultMatch } from "./util";
 
 test.describe("match", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await startDefaultMatch(page);
   });
 
   test("switches sides after one game", async ({ page }) => {

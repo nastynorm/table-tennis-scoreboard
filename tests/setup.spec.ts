@@ -1,11 +1,17 @@
 import { test, expect } from "@playwright/test";
-import { advanceGame, increaseSideScore, setSideScore } from "./util";
+import {
+  advanceGame,
+  increaseSideScore,
+  setSideScore,
+  startDefaultMatch,
+} from "./util";
 import { defaultGameConfig } from "../src/components/common";
 
 // TODO: test that config values are retained
 test.describe("setup mode", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await startDefaultMatch(page);
   });
   test.describe("menu button", () => {
 

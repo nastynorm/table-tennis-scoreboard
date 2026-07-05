@@ -42,7 +42,8 @@ import Menu from "./Menu";
 //
 
 export default function Game() {
-  const [mode, setMode] = createSignal<GameMode>(GameMode.Game);
+  // Open on the New Match wizard; Start Game moves to the scoreboard.
+  const [mode, setMode] = createSignal<GameMode>(GameMode.NewMatch);
   const [showCastHelp, setShowCastHelp] = createSignal(false);
   // Presentation mode hides all controls for a clean board when mirroring.
   const [presentation, setPresentation] = createSignal(false);
@@ -337,6 +338,8 @@ export default function Game() {
     if (screen === "viewer") {
       startViewer();
     } else if (screen === "control") {
+      // Pi kiosk control window: go straight to the board and broadcast.
+      setMode(GameMode.Game);
       startController();
       if (p.get("spawnViewer") === "1" && globalThis.open) {
         const vx = p.get("vx") ?? "800";
