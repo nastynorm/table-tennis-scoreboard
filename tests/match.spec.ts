@@ -163,21 +163,17 @@ test.describe("match", () => {
 
     await setSideScore(page, "left", 11); // player1
     await expect(page.getByTestId("winner-text")).toContainText("Player 1");
+
+    // Continue from match over -> New Match wizard -> start a fresh singles match
     await page.getByTestId("new-match-button").click();
+    await expect(page.getByTestId("new-match")).toBeVisible();
+    await page.getByTestId("format-singles").click();
+    await page.getByTestId("start-match").click();
 
-    await expect(page.getByTestId("winner-text")).not.toBeVisible({
-      timeout: 750,
-    });
-
-    await expect(page.getByTestId("left-score")).toBeVisible();
-    await expect(page.getByTestId("right-score")).toBeVisible();
-    await expect(page.getByTestId("left-games")).toBeVisible();
-    await expect(page.getByTestId("right-games")).toBeVisible();
+    await expect(page.getByTestId("winner-text")).not.toBeVisible();
     await expect(page.getByTestId("left-score")).toContainText("0");
     await expect(page.getByTestId("right-score")).toContainText("0");
     await expect(page.getByTestId("left-games")).toContainText("0");
     await expect(page.getByTestId("right-games")).toContainText("0");
-
-    await expect(page.getByTestId("winner-text")).not.toBeVisible();
   });
 });

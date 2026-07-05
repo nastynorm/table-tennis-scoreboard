@@ -10,7 +10,7 @@ import {
 import {
   GameMode,
   getServeInfo,
-  gamesToWin,
+  isTeamFormat,
   type GameConfig,
   type MatchState,
 } from "./common";
@@ -47,15 +47,17 @@ export default function PlayingGame(props: PlayingGameProps) {
 
   // Header label that adapts to the competition format.
   const centerLabel = () => {
+    const n = props.matchState.currentMatchNumber;
+    const t = props.matchState.totalMatches;
     switch (props.config.matchType) {
       case "league":
-        return `Match ${props.matchState.currentMatchNumber} / ${props.matchState.totalMatches}`;
+        return `League · Fixture ${n}/${t}`;
       case "knockout":
-        return `Knock-Out · Best of ${props.config.matchLength}`;
+        return `Knock-Out · Fixture ${n}/${t}`;
       case "summer":
-        return `Summer League · Best of ${props.config.matchLength}`;
+        return `Summer League · Fixture ${n}/${t}`;
       default:
-        return `Best of ${props.config.matchLength}`;
+        return `Singles · Best of ${props.config.matchLength}`;
     }
   };
 
@@ -83,7 +85,7 @@ export default function PlayingGame(props: PlayingGameProps) {
         nextScore > state.player2.score + 1
       ) {
         const nextGames = state.player1.games + 1;
-        const matchWon = nextGames >= gamesToWin(props.config.matchLength);
+        const matchWon = nextGames >= state.gamesNeeded;
         const gameLog = [
           ...state.gameLog,
           {
@@ -98,7 +100,7 @@ export default function PlayingGame(props: PlayingGameProps) {
           gameLog,
           player1: { ...state.player1, games: nextGames, score: nextScore },
           homeTeamScore:
-            matchWon && props.config.matchType === "league"
+            matchWon && isTeamFormat(props.config.matchType)
               ? state.homeTeamScore + 1
               : state.homeTeamScore,
         };
@@ -117,7 +119,7 @@ export default function PlayingGame(props: PlayingGameProps) {
         nextScore > state.player1.score + 1
       ) {
         const nextGames = state.player2.games + 1;
-        const matchWon = nextGames >= gamesToWin(props.config.matchLength);
+        const matchWon = nextGames >= state.gamesNeeded;
         const gameLog = [
           ...state.gameLog,
           {
@@ -132,7 +134,7 @@ export default function PlayingGame(props: PlayingGameProps) {
           gameLog,
           player2: { ...state.player2, games: nextGames, score: nextScore },
           visitorTeamScore:
-            matchWon && props.config.matchType === "league"
+            matchWon && isTeamFormat(props.config.matchType)
               ? state.visitorTeamScore + 1
               : state.visitorTeamScore,
         };
@@ -393,20 +395,20 @@ export default function PlayingGame(props: PlayingGameProps) {
       {/* Team Names and Match Score Header — pinned to the top */}
       <header class="shrink-0 grid grid-cols-3 items-center gap-2 py-2 px-4 sm:px-8 bg-white/5 backdrop-blur rounded-xl border border-white/10">
         <div class="text-center">
-          <h2 class="text-base sm:text-xl lg:text-2xl font-bold font-sports text-sky-300 truncate">
-            {props.matchState.swapped
-              ? (props.matchState.visitorTeamName || "Visitor Team")
-              : (props.matchState.homeTeamName || "Home Team")
-            }
-          </h2>
-          {props.config.matchType === "league" && (
+          <Show when={isTeamFormat(props.config.matchType)}>
+            <h2 class="text-base sm:text-xl lg:text-2xl font-bold font-sports text-sky-300 truncate">
+              {props.matchState.swapped
+                ? (props.matchState.visitorTeamName || "Visitor Team")
+                : (props.matchState.homeTeamName || "Home Team")
+              }
+            </h2>
             <div class="text-2xl sm:text-3xl lg:text-4xl font-bold font-mono text-sky-200">
               {props.matchState.swapped
                 ? props.matchState.visitorTeamScore
                 : props.matchState.homeTeamScore
               }
             </div>
-          )}
+          </Show>
         </div>
 
         <div class="text-center">
@@ -424,20 +426,20 @@ export default function PlayingGame(props: PlayingGameProps) {
         </div>
 
         <div class="text-center">
-          <h2 class="text-base sm:text-xl lg:text-2xl font-bold font-sports text-rose-300 truncate">
-            {props.matchState.swapped
-              ? (props.matchState.homeTeamName || "Home Team")
-              : (props.matchState.visitorTeamName || "Visitor Team")
-            }
-          </h2>
-          {props.config.matchType === "league" && (
+          <Show when={isTeamFormat(props.config.matchType)}>
+            <h2 class="text-base sm:text-xl lg:text-2xl font-bold font-sports text-rose-300 truncate">
+              {props.matchState.swapped
+                ? (props.matchState.homeTeamName || "Home Team")
+                : (props.matchState.visitorTeamName || "Visitor Team")
+              }
+            </h2>
             <div class="text-2xl sm:text-3xl lg:text-4xl font-bold font-mono text-rose-200">
               {props.matchState.swapped
                 ? props.matchState.homeTeamScore
                 : props.matchState.visitorTeamScore
               }
             </div>
-          )}
+          </Show>
         </div>
       </header>
 

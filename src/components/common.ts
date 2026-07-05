@@ -7,16 +7,26 @@ export enum GameMode {
   SwitchingSides = 5,
   Timeout = 6,
   LeagueOver = 7,
+  NewMatch = 8,
 }
 
 // TODO: add config for showing swap ends reminder
 // TODO: add config for auto-starting the next game
 
-// The kind of competition being scored. "normal" is a single best-of-N match.
-// "league" is the multi-match league night (Home vs Visitor, 7 fixtures).
-// "knockout" and "summer" are placeholders that currently play like a normal
-// match until their formats are fleshed out.
-export type MatchType = "normal" | "league" | "knockout" | "summer";
+// The kind of competition being scored.
+//  - "singles": a single best-of-N match between two players (or a pair).
+//  - "league" / "summer" / "knockout": team ties of 7 fixtures (incl. doubles),
+//    each fixture best-of-N, first team to win TIE_CLINCH fixtures takes the tie.
+//    They differ only in the fixture order (and default best-of).
+export type MatchType = "singles" | "league" | "summer" | "knockout";
+
+export function isTeamFormat(t: MatchType): boolean {
+  return t === "league" || t === "summer" || t === "knockout";
+}
+
+// A team tie is 7 fixtures; the first team to win 4 fixtures wins the tie.
+export const TIE_FIXTURES = 7;
+export const TIE_CLINCH = 4;
 
 export type GameConfig = {
   matchLength: number;
@@ -69,6 +79,8 @@ export type MatchState = {
   // Doubles only: offset (0|1) selecting which team-mate of the serving side
   // begins serving for the current game.
   doublesServerStart: number;
+  // Games one player/pair must win to take the current match/fixture.
+  gamesNeeded: number;
   // Team functionality
   homeTeamName: string;
   visitorTeamName: string;
@@ -76,7 +88,71 @@ export type MatchState = {
   visitorTeamScore: number;
   totalMatches: number;
   currentMatchNumber: number;
+  // Team line-ups (3 players each) used to generate the fixture scoresheet.
+  rosters: Rosters;
 };
+
+// Team line-ups for the scoresheet. Doubles uses players 1 & 2 of each team.
+export type Rosters = {
+  home: string[]; // [H1, H2, H3]
+  visitor: string[]; // [V1, V2, V3]
+  homeDoubles: string[]; // the two home players for the doubles fixture
+  visitorDoubles: string[]; // the two visitor players for the doubles fixture
+};
+
+// Payload emitted by the New Match wizard, consumed by Game.startMatch().
+export type NewMatchSetup = {
+  type: MatchType;
+  bestOf: number;
+  // singles
+  doubles: boolean;
+  p1: string;
+  p2: string;
+  p1Partner: string;
+  p2Partner: string;
+  // team
+  homeTeam: string;
+  visitorTeam: string;
+  home: string[];
+  visitor: string[];
+  homeDoubles: string[];
+  visitorDoubles: string[];
+};
+
+export type Fixture = {
+  p1: string;
+  p2: string;
+  p1Partner: string;
+  p2Partner: string;
+  doubles: boolean;
+};
+
+// Fixture slot order per format ([homeSlot, visitorSlot]; "D" = doubles).
+const LEAGUE_ORDER: (number | "D")[][] = [
+  [1, 1], [2, 2], [3, 3], ["D", "D"], [1, 2], [3, 1], [2, 3],
+];
+const CUP_ORDER: (number | "D")[][] = [
+  [1, 2], [2, 1], [3, 3], ["D", "D"], [1, 1], [2, 3], [3, 2],
+];
+
+// Build the 7-fixture scoresheet for a team tie from the line-ups.
+export function teamFixtures(type: MatchType, r: Rosters): Fixture[] {
+  const order = type === "league" ? LEAGUE_ORDER : CUP_ORDER;
+  return order.map(([hs, vs]) => {
+    if (hs === "D") {
+      return {
+        p1: r.homeDoubles?.[0] || r.home[0] || "H1",
+        p1Partner: r.homeDoubles?.[1] || r.home[1] || "H2",
+        p2: r.visitorDoubles?.[0] || r.visitor[0] || "V1",
+        p2Partner: r.visitorDoubles?.[1] || r.visitor[1] || "V2",
+        doubles: true,
+      };
+    }
+    const h = r.home[(hs as number) - 1] || `H${hs}`;
+    const v = r.visitor[(vs as number) - 1] || `V${vs}`;
+    return { p1: h, p2: v, p1Partner: "", p2Partner: "", doubles: false };
+  });
+}
 
 export const defaultGameConfig: GameConfig = {
   matchLength: 5,
@@ -91,37 +167,12 @@ export const defaultGameConfig: GameConfig = {
   breakDuration: 60, // 1 minute break between games
   doubles: false,
   showServer: true,
-  matchType: "league",
+  matchType: "singles",
 };
 
-// Number of games a player must win to take the match (best-of-matchLength).
+// Number of games a player must win to take a best-of-N match/fixture.
 export function gamesToWin(matchLength: number): number {
   return Math.floor(matchLength / 2) + 1;
-}
-
-// League fixture player names by match number (Home vs Visitor rotation).
-export function generatePlayerNames(matchNumber: number): {
-  player1Name: string;
-  player2Name: string;
-} {
-  switch (matchNumber) {
-    case 1:
-      return { player1Name: "H1", player2Name: "V1" };
-    case 2:
-      return { player1Name: "H2", player2Name: "V2" };
-    case 3:
-      return { player1Name: "H3", player2Name: "V3" };
-    case 4:
-      return { player1Name: "Doubles-H", player2Name: "Doubles-V" };
-    case 5:
-      return { player1Name: "H1", player2Name: "V2" };
-    case 6:
-      return { player1Name: "H3", player2Name: "V1" };
-    case 7:
-      return { player1Name: "H2", player2Name: "V3" };
-    default:
-      return { player1Name: `H${matchNumber}`, player2Name: `V${matchNumber}` };
-  }
 }
 
 export type ServeInfo = {

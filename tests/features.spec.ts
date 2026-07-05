@@ -101,60 +101,68 @@ test.describe("added features", () => {
     });
   });
 
-  test.describe("match type modal", () => {
-    test("New Match menu item opens the modal with four formats", async ({
-      page,
-    }) => {
+  test.describe("new match wizard", () => {
+    const openWizard = async (page) => {
       await page.getByTestId("menu-button").click();
       await page.getByTestId("new-match-menu-button").click();
-      await expect(page.getByTestId("match-type-modal")).toBeVisible();
-      await expect(page.getByTestId("match-type-normal")).toBeVisible();
-      await expect(page.getByTestId("match-type-league")).toBeVisible();
-      await expect(page.getByTestId("match-type-knockout")).toBeVisible();
-      await expect(page.getByTestId("match-type-summer")).toBeVisible();
+      await expect(page.getByTestId("new-match")).toBeVisible();
+    };
+
+    test("New Match opens the wizard with four formats", async ({ page }) => {
+      await openWizard(page);
+      await expect(page.getByTestId("format-singles")).toBeVisible();
+      await expect(page.getByTestId("format-league")).toBeVisible();
+      await expect(page.getByTestId("format-summer")).toBeVisible();
+      await expect(page.getByTestId("format-knockout")).toBeVisible();
     });
 
-    test("selecting Normal switches to best-of header, League shows fixtures", async ({
+    test("singles start shows a best-of header; league shows a scoresheet + fixtures", async ({
       page,
     }) => {
-      await page.getByTestId("menu-button").click();
-      await page.getByTestId("new-match-menu-button").click();
-      await page.getByTestId("match-type-normal").click();
-      await expect(page.getByTestId("match-type-modal")).not.toBeVisible();
-      await expect(page.getByTestId("match-center-label")).toContainText(
-        "Best of",
-      );
+      await openWizard(page);
+      await page.getByTestId("format-singles").click();
+      await page.getByTestId("start-match").click();
+      await expect(page.getByTestId("match-center-label")).toContainText("Singles");
 
-      await page.getByTestId("menu-button").click();
-      await page.getByTestId("new-match-menu-button").click();
-      await page.getByTestId("match-type-league").click();
-      await expect(page.getByTestId("match-center-label")).toContainText(
-        "Match 1 / 7",
-      );
+      await openWizard(page);
+      await page.getByTestId("format-league").click();
+      await expect(page.getByTestId("scoresheet")).toBeVisible();
+      await page.getByTestId("start-match").click();
+      await expect(page.getByTestId("match-center-label")).toContainText("Fixture 1/7");
     });
 
-    test("Normal match reaches the match-over screen at 3 games", async ({
-      page,
-    }) => {
-      // Turn off switching sides so the same side keeps winning
+    test("singles best-of-5 reaches match over at 3 games", async ({ page }) => {
+      // Global switch-ends off so one side keeps winning
       await page.getByTestId("menu-button").click();
       await page.getByTestId("setup-button").click();
       await page.getByTestId("switch-sides-input").uncheck();
       await page.getByTestId("setup-done-button").click();
 
-      // Start a normal (single) match
-      await page.getByTestId("menu-button").click();
-      await page.getByTestId("new-match-menu-button").click();
-      await page.getByTestId("match-type-normal").click();
+      await openWizard(page);
+      await page.getByTestId("format-singles").click();
+      await page.getByTestId("bestof-5").click();
+      await page.getByTestId("start-match").click();
 
-      // Win three games on the left -> match over (no league fixture advance)
       for (let g = 0; g < 3; g++) {
         await setSideScore(page, "left", 11);
-        if (g < 2) {
-          await page.getByTestId("new-game-button").click();
-        }
+        if (g < 2) await page.getByTestId("new-game-button").click();
       }
       await expect(page.getByTestId("wins-the-match")).toBeVisible();
+    });
+
+    test("summer league line-up drives its fixture order (H1 v V2 first)", async ({
+      page,
+    }) => {
+      await openWizard(page);
+      await page.getByTestId("format-summer").click();
+      await page.getByTestId("home-1").fill("Alice");
+      await page.getByTestId("visitor-2").fill("Zoe");
+      // scoresheet fixture 1 is H1 v V2 for summer/knockout
+      await expect(page.getByTestId("scoresheet")).toContainText("Alice");
+      await expect(page.getByTestId("scoresheet")).toContainText("Zoe");
+      await page.getByTestId("start-match").click();
+      await expect(page.getByTestId("left-name")).toContainText("Alice");
+      await expect(page.getByTestId("right-name")).toContainText("Zoe");
     });
   });
 
@@ -266,15 +274,16 @@ test.describe("added features", () => {
   });
 
   test.describe("doubles", () => {
-    test("enabling doubles shows partner names and partner serve ball", async ({
+    test("singles doubles shows partner names and partner serve ball", async ({
       page,
     }) => {
       await page.getByTestId("menu-button").click();
-      await page.getByTestId("setup-button").click();
-      await page.getByTestId("doubles-input").check();
-      await page.getByTestId("player1-partner-input").fill("Lefty Partner");
-      await page.getByTestId("player2-partner-input").fill("Righty Partner");
-      await page.getByTestId("setup-done-button").click();
+      await page.getByTestId("new-match-menu-button").click();
+      await page.getByTestId("format-singles").click();
+      await page.getByTestId("singles-doubles").check();
+      await page.getByTestId("singles-p1-partner").fill("Lefty Partner");
+      await page.getByTestId("singles-p2-partner").fill("Righty Partner");
+      await page.getByTestId("start-match").click();
 
       await expect(page.getByTestId("left-partner-name")).toContainText(
         "Lefty Partner",

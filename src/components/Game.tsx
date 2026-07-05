@@ -11,12 +11,16 @@ import {
   GameMode,
   type MatchState,
   type GameConfig,
-  type MatchType,
+  type NewMatchSetup,
   defaultGameConfig,
-  generatePlayerNames,
+  gamesToWin,
+  isTeamFormat,
+  teamFixtures,
+  TIE_CLINCH,
+  TIE_FIXTURES,
 } from "./common";
 import PlayingGame from "./PlayingGame";
-import MatchTypeModal from "./MatchTypeModal";
+import NewMatch from "./NewMatch";
 import SpectatorBoard from "./SpectatorBoard";
 import CastHelpModal from "./CastHelpModal";
 import {
@@ -39,7 +43,6 @@ import Menu from "./Menu";
 
 export default function Game() {
   const [mode, setMode] = createSignal<GameMode>(GameMode.Game);
-  const [showMatchTypeModal, setShowMatchTypeModal] = createSignal(false);
   const [showCastHelp, setShowCastHelp] = createSignal(false);
   // Presentation mode hides all controls for a clean board when mirroring.
   const [presentation, setPresentation] = createSignal(false);
@@ -73,12 +76,19 @@ export default function Game() {
     timeoutRemaining: 0,
     firstServer: 1,
     doublesServerStart: 0,
+    gamesNeeded: 3,
     homeTeamName: "Home Team",
     visitorTeamName: "Visitor Team",
     homeTeamScore: 0,
     visitorTeamScore: 0,
     totalMatches: 7,
     currentMatchNumber: 1,
+    rosters: {
+      home: ["H1", "H2", "H3"],
+      visitor: ["V1", "V2", "V3"],
+      homeDoubles: ["H1", "H2"],
+      visitorDoubles: ["V1", "V2"],
+    },
   });
   const [config, setConfig] = createStore<GameConfig>({
     ...defaultGameConfig,
@@ -149,106 +159,102 @@ export default function Game() {
       setMode(GameMode.Game);
     }
   };
-  const newMatch = () => {
-    setMode(GameMode.Game);
-    setMatchState((state) => {
-      // Generate initial player names for league format
-      const homeTeamName = state.homeTeamName || "Home";
-      const visitorTeamName = state.visitorTeamName || "Visitor";
-      const initialPlayer1Name = `H1`;
-    const initialPlayer2Name = `V1`;
-      
-      return {
-        player1: {
-          name: initialPlayer1Name,
-          score: 0,
-          games: 0,
-          timeoutsUsed: 0,
-          yellowCards: 0,
-          partnerName: state.player1.partnerName,
-        },
-        player2: {
-          name: initialPlayer2Name,
-          score: 0,
-          games: 0,
-          timeoutsUsed: 0,
-          yellowCards: 0,
-          partnerName: state.player2.partnerName,
-        },
-        gameLog: [],
-        swapped: false,
-        timeoutActive: false,
-        timeoutPlayer: 0,
-        timeoutRemaining: 0,
-        firstServer: 1,
-        doublesServerStart: 0,
-        homeTeamName: state.homeTeamName,
-        visitorTeamName: state.visitorTeamName,
+  const freshPlayer = (name: string, partnerName: string) => ({
+    name,
+    partnerName,
+    score: 0,
+    games: 0,
+    yellowCards: 0,
+    timeoutsUsed: 0,
+  });
+
+  const resetForNext = {
+    gameLog: [] as MatchState["gameLog"],
+    swapped: false,
+    timeoutActive: false,
+    timeoutPlayer: 0,
+    timeoutRemaining: 0,
+    firstServer: 1,
+    doublesServerStart: 0,
+  };
+
+  // Start a brand-new match/tie from the New Match wizard.
+  const startMatch = (setup: NewMatchSetup) => {
+    const gn = gamesToWin(setup.bestOf);
+    setConfig("matchType", setup.type);
+    setConfig("matchLength", setup.bestOf);
+
+    if (isTeamFormat(setup.type)) {
+      const rosters = {
+        home: setup.home,
+        visitor: setup.visitor,
+        homeDoubles: setup.homeDoubles,
+        visitorDoubles: setup.visitorDoubles,
+      };
+      const fx = teamFixtures(setup.type, rosters)[0];
+      setConfig("doubles", fx.doubles);
+      setMatchState((state) => ({
+        ...state,
+        ...resetForNext,
+        rosters,
+        homeTeamName: setup.homeTeam,
+        visitorTeamName: setup.visitorTeam,
         homeTeamScore: 0,
         visitorTeamScore: 0,
-        totalMatches: state.totalMatches,
+        totalMatches: TIE_FIXTURES,
         currentMatchNumber: 1,
-      };
-    });
-  };
-
-  // League only: after a sub-match is won (MatchOver), advance to the next
-  // fixture, or finish the league night.
-  const advanceLeague = () => {
-    setMatchState((state) => {
-      const next = state.currentMatchNumber + 1;
-      if (next > (state.totalMatches || 7)) {
-        setMode(GameMode.LeagueOver);
-        return state;
-      }
-      const { player1Name, player2Name } = generatePlayerNames(next);
-      setMode(GameMode.Game);
-      return {
+        gamesNeeded: gn,
+        player1: freshPlayer(fx.p1, fx.p1Partner),
+        player2: freshPlayer(fx.p2, fx.p2Partner),
+      }));
+    } else {
+      setConfig("doubles", setup.doubles);
+      setMatchState((state) => ({
         ...state,
-        player1: { ...state.player1, name: player1Name, games: 0, score: 0, yellowCards: 0 },
-        player2: { ...state.player2, name: player2Name, games: 0, score: 0, yellowCards: 0 },
-        gameLog: [],
-        swapped: false,
-        timeoutActive: false,
-        timeoutPlayer: 0,
-        timeoutRemaining: 0,
-        firstServer: 1,
-        doublesServerStart: 0,
-        currentMatchNumber: next,
-      };
-    });
-  };
+        ...resetForNext,
+        homeTeamScore: 0,
+        visitorTeamScore: 0,
+        totalMatches: 1,
+        currentMatchNumber: 1,
+        gamesNeeded: gn,
+        player1: freshPlayer(setup.p1, setup.p1Partner),
+        player2: freshPlayer(setup.p2, setup.p2Partner),
+      }));
+    }
 
-  // Start a brand-new match of the chosen format (driven by the modal).
-  const startMatch = (type: MatchType) => {
-    setShowMatchTypeModal(false);
-    setConfig("matchType", type);
     if (globalThis.localStorage) {
       localStorage.setItem(
         "config",
-        JSON.stringify({ ...config, matchType: type }),
+        JSON.stringify({
+          ...config,
+          matchType: setup.type,
+          matchLength: setup.bestOf,
+          doubles: isTeamFormat(setup.type) ? false : setup.doubles,
+        }),
       );
     }
-    if (type === "league") {
-      // League night keeps its Home/Visitor fixture flow.
-      newMatch();
+    setMode(GameMode.Game);
+  };
+
+  // Team ties: after a fixture (MatchOver), advance to the next one or end the
+  // tie (a team clinched TIE_CLINCH fixtures, or all fixtures played).
+  const advanceTie = () => {
+    const state = matchState;
+    const clinched =
+      state.homeTeamScore >= TIE_CLINCH || state.visitorTeamScore >= TIE_CLINCH;
+    const next = state.currentMatchNumber + 1;
+    if (clinched || next > state.totalMatches) {
+      setMode(GameMode.LeagueOver);
       return;
     }
-    // normal / knockout / summer: a fresh single match keeping configured names.
-    setMatchState((state) => ({
-      ...state,
-      player1: { ...state.player1, score: 0, games: 0, yellowCards: 0 },
-      player2: { ...state.player2, score: 0, games: 0, yellowCards: 0 },
-      gameLog: [],
-      swapped: false,
-      timeoutActive: false,
-      timeoutPlayer: 0,
-      timeoutRemaining: 0,
-      firstServer: 1,
-      doublesServerStart: 0,
-      homeTeamScore: 0,
-      visitorTeamScore: 0,
-      currentMatchNumber: 1,
+    const fx = teamFixtures(config.matchType, state.rosters)[next - 1];
+    setConfig("doubles", fx.doubles);
+    setMatchState((s) => ({
+      ...s,
+      ...resetForNext,
+      currentMatchNumber: next,
+      player1: freshPlayer(fx.p1, fx.p1Partner),
+      player2: freshPlayer(fx.p2, fx.p2Partner),
     }));
     setMode(GameMode.Game);
   };
@@ -367,11 +373,13 @@ export default function Game() {
       classList={{
         "transition-colors duration-300": true,
         // Fit the whole app to the screen (no vertical scroll) except the Setup
-        // form, which is allowed to scroll.
-        "h-[100dvh] overflow-hidden": mode() !== GameMode.Setup,
-        "min-h-screen overflow-y-auto": mode() === GameMode.Setup,
+        // form and New Match wizard, which are allowed to scroll.
+        "h-[100dvh] overflow-hidden":
+          mode() !== GameMode.Setup && mode() !== GameMode.NewMatch,
+        "min-h-screen overflow-y-auto":
+          mode() === GameMode.Setup || mode() === GameMode.NewMatch,
         "bg-gradient-to-br from-slate-900 via-slate-950 to-black":
-          mode() === GameMode.Game,
+          mode() === GameMode.Game || mode() === GameMode.NewMatch,
         "bg-gradient-to-br from-rose-950 via-slate-950 to-black":
           mode() === GameMode.Correction,
         "bg-gradient-to-br from-emerald-900 via-slate-950 to-black": // game completion states
@@ -386,8 +394,8 @@ export default function Game() {
       <div
         classList={{
           "px-3 sm:px-6 mx-auto w-full max-w-[1700px] text-white": true,
-          "h-full": mode() !== GameMode.Setup,
-          "min-h-screen": mode() === GameMode.Setup,
+          "h-full": mode() !== GameMode.Setup && mode() !== GameMode.NewMatch,
+          "min-h-screen": mode() === GameMode.Setup || mode() === GameMode.NewMatch,
         }}
       >
         <Switch fallback={<div>Not Implemented</div>}>
@@ -412,17 +420,23 @@ export default function Game() {
           <Match when={mode() === GameMode.MatchOver}>
             <MatchOver
               newMatch={
-                config.matchType === "league"
-                  ? advanceLeague
-                  : () => setShowMatchTypeModal(true)
+                isTeamFormat(config.matchType)
+                  ? advanceTie
+                  : () => setMode(GameMode.NewMatch)
               }
               matchState={matchState}
             />
           </Match>
           <Match when={mode() === GameMode.LeagueOver}>
             <LeagueOver
-              newMatch={() => setShowMatchTypeModal(true)}
+              newMatch={() => setMode(GameMode.NewMatch)}
               matchState={matchState}
+            />
+          </Match>
+          <Match when={mode() === GameMode.NewMatch}>
+            <NewMatch
+              onStart={startMatch}
+              onCancel={() => setMode(GameMode.Game)}
             />
           </Match>
           <Match when={mode() === GameMode.Setup}>
@@ -437,7 +451,7 @@ export default function Game() {
         </Switch>
       </div>
 
-      <Show when={mode() !== GameMode.Setup}>
+      <Show when={mode() !== GameMode.Setup && mode() !== GameMode.NewMatch}>
         <Menu>
           <ul class="min-w-28 max-h-[85dvh] overflow-y-auto text-center bg-white rounded-lg shadow-xl text-black font-mono font-bold divide-y divide-gray-200">
             <li class="p-2">
@@ -448,7 +462,7 @@ export default function Game() {
             <li class="p-2">
               <button
                 class="cursor-pointer"
-                onClick={() => setShowMatchTypeModal(true)}
+                onClick={() => setMode(GameMode.NewMatch)}
                 title="Start a new match"
                 data-testid="new-match-menu-button"
               >
@@ -535,14 +549,6 @@ export default function Game() {
           <span class="w-2 h-2 rounded-full bg-black animate-pulse" />
           Broadcasting
         </div>
-      </Show>
-
-      <Show when={showMatchTypeModal()}>
-        <MatchTypeModal
-          current={config.matchType}
-          onSelect={startMatch}
-          onClose={() => setShowMatchTypeModal(false)}
-        />
       </Show>
     </div>
     </Show>

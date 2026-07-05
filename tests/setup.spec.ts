@@ -37,71 +37,33 @@ test.describe("setup mode", () => {
     });
   });
   
-  test.describe("player names", () => {
-    test("can change player 1 name", async ({ page }) => {
-      await expect(page.getByTestId("left-name")).toContainText("Player 1");
+  test.describe("player names (via New Match wizard)", () => {
+    const startSingles = async (page, n1: string, n2: string) => {
       await page.getByTestId("menu-button").click();
-      await page.getByTestId("setup-button").click();
-      await page.getByTestId("player1-name-input").fill("New Name");
-      await page.getByTestId("setup-done-button").click();
-      await expect(page.getByTestId("left-name")).toContainText("New Name");
+      await page.getByTestId("new-match-menu-button").click();
+      await page.getByTestId("format-singles").click();
+      await page.getByTestId("singles-p1").fill(n1);
+      await page.getByTestId("singles-p2").fill(n2);
+      await page.getByTestId("start-match").click();
+    };
+
+    test("names entered in the wizard show on the board", async ({ page }) => {
+      await startSingles(page, "Alice", "Bob");
+      await expect(page.getByTestId("left-name")).toContainText("Alice");
+      await expect(page.getByTestId("right-name")).toContainText("Bob");
       await expect(page.getByTestId("left-button")).toHaveAttribute(
         "aria-label",
-        "New Name scored",
-      );
-      await expect(page.getByTestId("left-name")).not.toContainText("Player 1");
-    });
-
-    test("can change player 2 name", async ({ page }) => {
-      await expect(page.getByTestId("right-name")).toContainText("Player 2");
-      await page.getByTestId("menu-button").click();
-      await page.getByTestId("setup-button").click();
-      await page.getByTestId("player2-name-input").fill("New Name");
-      await page.getByTestId("setup-done-button").click();
-      await expect(page.getByTestId("right-name")).toContainText("New Name");
-      await expect(page.getByTestId("right-button")).toHaveAttribute(
-        "aria-label",
-        "New Name scored",
-      );
-      await expect(page.getByTestId("right-name")).not.toContainText(
-        "Player 2",
+        "Alice scored",
       );
     });
 
-    test("player 1 name change applies in correction mode", async ({
-      page,
-    }) => {
-      await expect(page.getByTestId("left-name")).toContainText("Player 1");
-      await page.getByTestId("menu-button").click();
-      await page.getByTestId("setup-button").click();
-      await page.getByTestId("player1-name-input").fill("New Name");
-      await page.getByTestId("setup-done-button").click();
-
+    test("wizard names apply in correction mode", async ({ page }) => {
+      await startSingles(page, "Alice", "Bob");
       await page.getByTestId("correction-button").click();
-      await expect(page.getByTestId("left-name")).toContainText("New Name");
       await expect(page.getByTestId("left-correction-button")).toHaveAttribute(
         "aria-label",
-        "subtract a point from New Name",
+        "subtract a point from Alice",
       );
-      await expect(page.getByTestId("left-name")).not.toContainText("Player 1");
-    });
-
-    test("player 2 name change applies in correction mode", async ({
-      page,
-    }) => {
-      await expect(page.getByTestId("right-name")).toContainText("Player 2");
-      await page.getByTestId("menu-button").click();
-      await page.getByTestId("setup-button").click();
-      await page.getByTestId("player2-name-input").fill("New Name");
-      await page.getByTestId("setup-done-button").click();
-
-      await page.getByTestId("correction-button").click();
-      await expect(page.getByTestId("right-name")).toContainText("New Name");
-      await expect(page.getByTestId("right-correction-button")).toHaveAttribute(
-        "aria-label",
-        "subtract a point from New Name",
-      );
-      await expect(page.getByTestId("right-name")).not.toContainText("Player 2");
     });
   });
 
@@ -211,26 +173,23 @@ test.describe("setup mode", () => {
       await expect(page.getByTestId("winner-text")).toBeVisible();
     });
 
-    test("can change the match length to a lower number", async ({ page }) => {
+    test("best of 3 (via wizard) ends the match at 2 games", async ({ page }) => {
+      // switch ends off so one side wins both games
       await page.getByTestId("menu-button").click();
       await page.getByTestId("setup-button").click();
-      await page.getByTestId("match-length-input").fill("3");
+      await page.getByTestId("switch-sides-input").uncheck();
       await page.getByTestId("setup-done-button").click();
-      // play two games
-      //
-      // left player (player 1) wins
+
+      await page.getByTestId("menu-button").click();
+      await page.getByTestId("new-match-menu-button").click();
+      await page.getByTestId("format-singles").click();
+      await page.getByTestId("bestof-3").click();
+      await page.getByTestId("start-match").click();
+
       await setSideScore(page, "left", 11);
       await expect(page.getByTestId("winner-text")).toBeVisible();
-      await expect(page.getByTestId("winner-text")).toContainText("Player 1");
-      await advanceGame(page);
-      // sides swap
-
-      await expect(page.getByTestId("left-score")).toBeVisible();
-      // right player (player 1) wins
-      await setSideScore(page, "right", 11);
-      await expect(page.getByTestId("winner-text")).toContainText("Player 1");
-
-      await expect(page.getByTestId("winner-text")).toBeVisible();
+      await page.getByTestId("new-game-button").click();
+      await setSideScore(page, "left", 11);
       await expect(page.getByTestId("match-end-screen")).toBeVisible();
     });
   });
