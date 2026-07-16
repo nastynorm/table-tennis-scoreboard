@@ -483,6 +483,18 @@ export default function Game() {
               </button>
             </li>
             <li class="p-2">
+              <button
+                class="cursor-pointer"
+                onClick={() =>
+                  setMatchState((state) => ({ ...state, swapped: !state.swapped }))
+                }
+                title="Swap which player is on the left/right"
+                data-testid="switch-sides-button"
+              >
+                Switch Sides
+              </button>
+            </li>
+            <li class="p-2">
               <Show
                 when={syncRole() === "controller"}
                 fallback={

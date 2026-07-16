@@ -16,6 +16,28 @@ test.describe("match", () => {
     await expect(page.getByTestId("right-name")).toContainText("Player 1");
   });
 
+  test("switches sides manually from the menu", async ({ page }) => {
+    await expect(page.getByTestId("left-name")).toContainText("Player 1");
+    await expect(page.getByTestId("right-name")).toContainText("Player 2");
+    // A point on the left belongs to Player 1 before the swap.
+    await setSideScore(page, "left", 3);
+
+    await page.getByTestId("menu-button").click();
+    await page.getByTestId("switch-sides-button").click();
+
+    // Players swap ends, but their scores travel with them.
+    await expect(page.getByTestId("left-name")).toContainText("Player 2");
+    await expect(page.getByTestId("right-name")).toContainText("Player 1");
+    await expect(page.getByTestId("right-score")).toContainText("3");
+    await expect(page.getByTestId("left-score")).toContainText("0");
+
+    // Switching again restores the original sides.
+    await page.getByTestId("menu-button").click();
+    await page.getByTestId("switch-sides-button").click();
+    await expect(page.getByTestId("left-name")).toContainText("Player 1");
+    await expect(page.getByTestId("right-name")).toContainText("Player 2");
+  });
+
   test("starts new game from win screen on click and records win (player1 win)", async ({
     page,
   }) => {
