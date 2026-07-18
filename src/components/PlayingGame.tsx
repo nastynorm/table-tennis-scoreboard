@@ -16,6 +16,7 @@ import {
 } from "./common";
 import PlayerScore from "./PlayerScore";
 import TimeoutTimer from "./TimeoutTimer";
+import WarmupTimer from "./WarmupTimer";
 
 // TODO: option to hide ui
 interface PlayingGameProps {
@@ -44,6 +45,7 @@ export default function PlayingGame(props: PlayingGameProps) {
   const [player1RedNumber, setPlayer1RedNumber] = createSignal(false);
   const [player2RedNumber, setPlayer2RedNumber] = createSignal(false);
   const [timeoutInterval, setTimeoutInterval] = createSignal<NodeJS.Timeout | null>(null);
+  const [warmupInterval, setWarmupInterval] = createSignal<NodeJS.Timeout | null>(null);
 
   // Header label that adapts to the competition format.
   const centerLabel = () => {
@@ -214,6 +216,45 @@ export default function PlayingGame(props: PlayingGameProps) {
         timeoutPlayer: 0,
       };
     });
+  };
+
+  // Pre-match warm-up countdown (shown at the start of a match/fixture).
+  const startWarmup = () => {
+    if (props.matchState.warmupActive) return;
+    props.setMatchState((state) => ({
+      ...state,
+      warmupActive: true,
+      warmupRemaining: props.config.warmupDuration,
+    }));
+    const interval = setInterval(() => {
+      props.setMatchState((state) => {
+        if (state.warmupRemaining <= 1) {
+          clearInterval(interval);
+          return {
+            ...state,
+            warmupActive: false,
+            warmupAvailable: false,
+            warmupRemaining: 0,
+          };
+        }
+        return { ...state, warmupRemaining: state.warmupRemaining - 1 };
+      });
+    }, 1000);
+    setWarmupInterval(interval);
+  };
+
+  const skipWarmup = () => {
+    const interval = warmupInterval();
+    if (interval) {
+      clearInterval(interval);
+      setWarmupInterval(null);
+    }
+    props.setMatchState((state) => ({
+      ...state,
+      warmupActive: false,
+      warmupAvailable: false,
+      warmupRemaining: 0,
+    }));
   };
 
   const player1Correction = () => {
@@ -388,6 +429,8 @@ export default function PlayingGame(props: PlayingGameProps) {
       globalThis.removeEventListener("keyup", handleKeyUp);
     }
     cleanupTimeout();
+    const w = warmupInterval();
+    if (w) clearInterval(w);
   });
 
   return (
@@ -566,6 +609,36 @@ export default function PlayingGame(props: PlayingGameProps) {
           </Show>
         </div>
       </Show>
+
+      {/* Pre-match WARM UP button (bottom-left), before any point is played. */}
+      <Show
+        when={
+          props.matchState.warmupAvailable &&
+          !props.matchState.warmupActive &&
+          !props.presentation &&
+          props.mode === GameMode.Game &&
+          props.matchState.player1.score === 0 &&
+          props.matchState.player2.score === 0 &&
+          props.matchState.player1.games === 0 &&
+          props.matchState.player2.games === 0 &&
+          props.matchState.gameLog.length === 0
+        }
+      >
+        <button
+          type="button"
+          class="fixed bottom-0 left-0 mb-2 ml-2 z-40 h-[18px] px-3 flex items-center bg-sky-500 text-white font-mono font-bold text-[10px] uppercase rounded-md shadow-[0_1px_0_0_rgba(0,0,0,0.4)] active:translate-y-0.5 active:shadow-none transition-all"
+          onClick={() => startWarmup()}
+          data-testid="warmup-button"
+          title="Start the pre-match warm-up timer"
+        >
+          Warm Up
+        </button>
+      </Show>
+
+      <WarmupTimer
+        remaining={props.matchState.warmupRemaining}
+        onSkip={skipWarmup}
+      />
 
       <TimeoutTimer
         timeoutRemaining={props.matchState.timeoutRemaining}

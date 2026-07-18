@@ -273,6 +273,25 @@ test.describe("added features", () => {
     });
   });
 
+  test.describe("warm up", () => {
+    test("warm-up button starts a countdown then disappears when skipped", async ({
+      page,
+    }) => {
+      await expect(page.getByTestId("warmup-button")).toBeVisible();
+      await page.getByTestId("warmup-button").click();
+      await expect(page.getByTestId("skip-warmup-button")).toBeVisible();
+      await page.getByTestId("skip-warmup-button").click();
+      await expect(page.getByTestId("skip-warmup-button")).not.toBeVisible();
+      await expect(page.getByTestId("warmup-button")).not.toBeVisible();
+    });
+
+    test("warm-up button hides once play starts", async ({ page }) => {
+      await expect(page.getByTestId("warmup-button")).toBeVisible();
+      await page.getByTestId("left-button").click();
+      await expect(page.getByTestId("warmup-button")).not.toBeVisible();
+    });
+  });
+
   test.describe("doubles", () => {
     test("singles doubles shows partner names and partner serve ball", async ({
       page,

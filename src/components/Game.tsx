@@ -75,6 +75,9 @@ export default function Game() {
     timeoutActive: false,
     timeoutPlayer: 0,
     timeoutRemaining: 0,
+    warmupAvailable: false,
+    warmupActive: false,
+    warmupRemaining: 0,
     firstServer: 1,
     doublesServerStart: 0,
     gamesNeeded: 3,
@@ -169,12 +172,17 @@ export default function Game() {
     timeoutsUsed: 0,
   });
 
+  // Applied when starting a new match or fixture (not between games). Enables
+  // the warm-up button for the new match/fixture.
   const resetForNext = {
     gameLog: [] as MatchState["gameLog"],
     swapped: false,
     timeoutActive: false,
     timeoutPlayer: 0,
     timeoutRemaining: 0,
+    warmupAvailable: true,
+    warmupActive: false,
+    warmupRemaining: 0,
     firstServer: 1,
     doublesServerStart: 0,
   };

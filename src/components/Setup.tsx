@@ -60,6 +60,9 @@ export default function Setup(props: SetupProps) {
     let timeoutDuration = parseInt(data.get("timeoutDuration") as string, 10);
     if (isNaN(timeoutDuration) || timeoutDuration < 5) timeoutDuration = props.config.timeoutDuration;
 
+    let warmupDuration = parseInt(data.get("warmupDuration") as string, 10);
+    if (isNaN(warmupDuration) || warmupDuration < 5) warmupDuration = props.config.warmupDuration;
+
     const switchSides = data.get("switchSides") === "on";
     const showServer = data.get("showServer") === "on";
 
@@ -67,6 +70,7 @@ export default function Setup(props: SetupProps) {
     // and player/team names alone.
     props.setConfig("winningScore", winningScore);
     props.setConfig("timeoutDuration", timeoutDuration);
+    props.setConfig("warmupDuration", warmupDuration);
     props.setConfig("switchSides", switchSides);
     props.setConfig("showServer", showServer);
     props.setConfig("player1Key", player1Key());
@@ -82,6 +86,7 @@ export default function Setup(props: SetupProps) {
           ...props.config,
           winningScore,
           timeoutDuration,
+          warmupDuration,
           switchSides,
           showServer,
           player1Key: player1Key(),
@@ -137,6 +142,11 @@ export default function Setup(props: SetupProps) {
         <div class="flex flex-col gap-2">
           <label for="timeoutDuration" class="text-xl font-normal tracking-wider font-sports">Timeout length (seconds)</label>
           <input type="number" id="timeoutDuration" name="timeoutDuration" min="5" value={props.config.timeoutDuration} data-testid="timeout-duration-input" class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none rounded" />
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="warmupDuration" class="text-xl font-normal tracking-wider font-sports">Warm-up length (seconds)</label>
+          <input type="number" id="warmupDuration" name="warmupDuration" min="5" value={props.config.warmupDuration} data-testid="warmup-duration-input" class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none rounded" />
+          <p class="font-mono text-xs text-gray-600">Shown as a WARM UP button at the start of each match (default 120s).</p>
         </div>
       </section>
 

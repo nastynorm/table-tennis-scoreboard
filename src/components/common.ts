@@ -39,6 +39,8 @@ export type GameConfig = {
   player2CorrectionKey: string;
   timeoutDuration: number;
   breakDuration: number;
+  // Length of the pre-match warm-up countdown, in seconds.
+  warmupDuration: number;
   // Doubles: when enabled each side has two players and the serve indicator
   // tracks which of the two team-mates is serving.
   doubles: boolean;
@@ -73,6 +75,11 @@ export type MatchState = {
   timeoutActive: boolean;
   timeoutPlayer: number;
   timeoutRemaining: number;
+  // Pre-match warm-up: available (button shown) at the start of a match/fixture,
+  // active while its countdown runs.
+  warmupAvailable: boolean;
+  warmupActive: boolean;
+  warmupRemaining: number;
   // Serving: which side served the FIRST point of the current game (1 or 2).
   // The current server is derived from this plus the score.
   firstServer: number;
@@ -165,6 +172,7 @@ export const defaultGameConfig: GameConfig = {
   player2CorrectionKey: "2",
   timeoutDuration: 60, // 1 minute timeout
   breakDuration: 60, // 1 minute break between games
+  warmupDuration: 120, // 2 minute pre-match warm-up
   doubles: false,
   showServer: true,
   matchType: "singles",
