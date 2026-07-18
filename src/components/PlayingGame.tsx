@@ -626,12 +626,12 @@ export default function PlayingGame(props: PlayingGameProps) {
       >
         <button
           type="button"
-          class="fixed bottom-0 left-0 mb-2 ml-2 z-40 h-[18px] px-3 flex items-center bg-sky-500 text-white font-mono font-bold text-[10px] uppercase rounded-md shadow-[0_1px_0_0_rgba(0,0,0,0.4)] active:translate-y-0.5 active:shadow-none transition-all"
+          class="fixed bottom-0 left-0 mb-2 ml-2 z-40 py-2 px-4 flex items-center gap-1 bg-sky-500 hover:bg-sky-400 text-white font-mono font-bold text-sm sm:text-base uppercase rounded-lg shadow-[0_3px_0_0_rgba(0,0,0,0.4)] active:translate-y-1 active:shadow-none transition-all animate-pulse"
           onClick={() => startWarmup()}
           data-testid="warmup-button"
           title="Start the pre-match warm-up timer"
         >
-          Warm Up
+          ⏱ Warm Up
         </button>
       </Show>
 
