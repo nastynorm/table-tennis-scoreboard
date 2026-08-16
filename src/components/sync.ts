@@ -18,6 +18,7 @@ export type Snapshot = {
   dss: number; // doublesServerStart
   ta: boolean; tp: number; tr: number; // timeout active / player / remaining
   wa: boolean; wr: number; // warm-up active / remaining
+  ba: boolean; br: number; // water break active / remaining
   htn: string; vtn: string; hts: number; vts: number; // team names + scores
   tm: number; cmn: number; // totalMatches, currentMatchNumber
   ws: number; ml: number; db: boolean; ss: boolean; mt: string; // winningScore, matchLength, doubles, showServer, matchType
@@ -44,6 +45,8 @@ export function makeSnapshot(state: MatchState, config: GameConfig): Snapshot {
     tr: state.timeoutRemaining,
     wa: state.warmupActive,
     wr: state.warmupRemaining,
+    ba: state.waterBreakActive,
+    br: state.waterBreakRemaining,
     htn: state.homeTeamName,
     vtn: state.visitorTeamName,
     hts: state.homeTeamScore,

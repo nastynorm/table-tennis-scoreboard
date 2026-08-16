@@ -63,6 +63,9 @@ export default function Setup(props: SetupProps) {
     let warmupDuration = parseInt(data.get("warmupDuration") as string, 10);
     if (isNaN(warmupDuration) || warmupDuration < 5) warmupDuration = props.config.warmupDuration;
 
+    let breakDuration = parseInt(data.get("breakDuration") as string, 10);
+    if (isNaN(breakDuration) || breakDuration < 5) breakDuration = props.config.breakDuration;
+
     const switchSides = data.get("switchSides") === "on";
     const showServer = data.get("showServer") === "on";
 
@@ -71,6 +74,7 @@ export default function Setup(props: SetupProps) {
     props.setConfig("winningScore", winningScore);
     props.setConfig("timeoutDuration", timeoutDuration);
     props.setConfig("warmupDuration", warmupDuration);
+    props.setConfig("breakDuration", breakDuration);
     props.setConfig("switchSides", switchSides);
     props.setConfig("showServer", showServer);
     props.setConfig("player1Key", player1Key());
@@ -87,6 +91,7 @@ export default function Setup(props: SetupProps) {
           winningScore,
           timeoutDuration,
           warmupDuration,
+          breakDuration,
           switchSides,
           showServer,
           player1Key: player1Key(),
@@ -147,6 +152,11 @@ export default function Setup(props: SetupProps) {
           <label for="warmupDuration" class="text-xl font-normal tracking-wider font-sports">Warm-up length (seconds)</label>
           <input type="number" id="warmupDuration" name="warmupDuration" min="5" value={props.config.warmupDuration} data-testid="warmup-duration-input" class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none rounded" />
           <p class="font-mono text-xs text-gray-600">Shown as a WARM UP button at the start of each match (default 120s).</p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="breakDuration" class="text-xl font-normal tracking-wider font-sports">Water break length (seconds)</label>
+          <input type="number" id="breakDuration" name="breakDuration" min="5" value={props.config.breakDuration} data-testid="break-duration-input" class="py-2 px-4 w-full font-mono bg-white border-2 border-black focus:outline-none rounded" />
+          <p class="font-mono text-xs text-gray-600">Optional countdown between games, started from the game-over screen (default 60s).</p>
         </div>
       </section>
 

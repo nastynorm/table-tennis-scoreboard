@@ -80,6 +80,10 @@ export type MatchState = {
   warmupAvailable: boolean;
   warmupActive: boolean;
   warmupRemaining: number;
+  // Water break: a 1-minute countdown taken between games (on the game-over
+  // screen). Active while its countdown runs.
+  waterBreakActive: boolean;
+  waterBreakRemaining: number;
   // Serving: which side served the FIRST point of the current game (1 or 2).
   // The current server is derived from this plus the score.
   firstServer: number;

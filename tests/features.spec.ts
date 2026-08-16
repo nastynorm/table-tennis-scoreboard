@@ -146,7 +146,7 @@ test.describe("added features", () => {
 
       for (let g = 0; g < 3; g++) {
         await setSideScore(page, "left", 11);
-        if (g < 2) await page.getByTestId("new-game-button").click();
+        if (g < 2) await advanceGame(page);
       }
       await expect(page.getByTestId("wins-the-match")).toBeVisible();
     });
@@ -289,6 +289,25 @@ test.describe("added features", () => {
       await expect(page.getByTestId("warmup-button")).toBeVisible();
       await page.getByTestId("left-button").click();
       await expect(page.getByTestId("warmup-button")).not.toBeVisible();
+    });
+  });
+
+  test.describe("water break", () => {
+    test("game-over screen starts a water break, which can be skipped to the next game", async ({
+      page,
+    }) => {
+      // Win game 1 to reach the game-over screen (best of 5 -> not match over).
+      await setSideScore(page, "left", 11);
+      await expect(page.getByTestId("game-end-screen")).toBeVisible();
+
+      // Tapping the screen (background) starts the water break countdown overlay.
+      await page.getByTestId("winner-text").click();
+      await expect(page.getByTestId("skip-water-break-button")).toBeVisible();
+
+      // Skipping the break advances to the next game (scoreboard visible again).
+      await page.getByTestId("skip-water-break-button").click();
+      await expect(page.getByTestId("skip-water-break-button")).not.toBeVisible();
+      await expect(page.getByTestId("left-button")).toBeVisible();
     });
   });
 

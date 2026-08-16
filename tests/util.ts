@@ -48,6 +48,11 @@ export async function increaseSideScore(
 
 export async function advanceGame(page: Page) {
   await page.getByTestId("new-game-button").click();
+  // Between games a water break may start; skip it to reach the next game.
+  const skipBreak = page.getByTestId("skip-water-break-button");
+  if (await skipBreak.isVisible().catch(() => false)) {
+    await skipBreak.click();
+  }
   if (
     (await page.getByTestId("left-score").isHidden()) &&
     (await page.getByTestId("start-game-button").isVisible())

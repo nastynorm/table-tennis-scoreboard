@@ -78,6 +78,8 @@ export default function Game() {
     warmupAvailable: false,
     warmupActive: false,
     warmupRemaining: 0,
+    waterBreakActive: false,
+    waterBreakRemaining: 0,
     firstServer: 1,
     doublesServerStart: 0,
     gamesNeeded: 3,
@@ -151,6 +153,8 @@ export default function Game() {
       timeoutActive: false,
       timeoutPlayer: 0,
       timeoutRemaining: 0,
+      waterBreakActive: false,
+      waterBreakRemaining: 0,
       // The receiver of the previous game serves first in the next one.
       firstServer: state.firstServer === 1 ? 2 : 1,
     }));
@@ -183,6 +187,8 @@ export default function Game() {
     warmupAvailable: true,
     warmupActive: false,
     warmupRemaining: 0,
+    waterBreakActive: false,
+    waterBreakRemaining: 0,
     firstServer: 1,
     doublesServerStart: 0,
   };
@@ -423,7 +429,12 @@ export default function Game() {
             />
           </Match>
           <Match when={mode() === GameMode.GameOver}>
-            <GameOver matchState={matchState} newGame={newGame} />
+            <GameOver
+              matchState={matchState}
+              setMatchState={setMatchState}
+              config={config}
+              newGame={newGame}
+            />
           </Match>
           <Match when={mode() === GameMode.SwitchingSides}>
             <SwitchingSides setMode={setMode} />

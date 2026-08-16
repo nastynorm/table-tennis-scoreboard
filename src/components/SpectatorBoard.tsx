@@ -220,6 +220,21 @@ export default function SpectatorBoard(props: SpectatorBoardProps) {
             </div>
           </div>
         </Show>
+
+        <Show when={s()!.ba && s()!.br > 0}>
+          <div class="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-50 p-3">
+            <div class="bg-gradient-to-b from-cyan-600 to-teal-700 text-white px-6 py-4 rounded-2xl text-center shadow-2xl max-h-[94vh] flex flex-col items-center justify-center gap-1">
+              <div class="text-2xl sm:text-4xl font-bold font-sports tracking-wider leading-none">💧 WATER BREAK</div>
+              <div
+                class="font-mono font-bold leading-none"
+                classList={{ "text-amber-300 animate-pulse": s()!.br <= 10 }}
+                style="font-size: clamp(3rem, 40vh, 13rem);"
+              >
+                {Math.floor(s()!.br / 60)}:{(s()!.br % 60).toString().padStart(2, "0")}
+              </div>
+            </div>
+          </div>
+        </Show>
       </Show>
     </div>
   );
