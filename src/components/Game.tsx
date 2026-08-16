@@ -31,6 +31,7 @@ import {
   type SyncTransport,
 } from "./sync";
 import GameOver from "./GameOver";
+import { setSoundEnabled } from "./sounds";
 import SwitchingSides from "./SwitchingSides";
 import MatchOver from "./MatchOver";
 import LeagueOver from "./LeagueOver";
@@ -321,6 +322,11 @@ export default function Game() {
       if (globalThis.alert) alert("Could not start viewer: " + (e as Error).message);
     }
   };
+
+  // Keep the sound module in sync with the Settings toggle (also on load).
+  createEffect(() => {
+    setSoundEnabled(config.soundEnabled);
+  });
 
   // Whenever the screen (mode) changes, jump back to the top so result
   // headings like "<Player> Wins the Match" are always visible.

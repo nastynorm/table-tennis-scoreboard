@@ -17,6 +17,7 @@ import {
 import PlayerScore from "./PlayerScore";
 import TimeoutTimer from "./TimeoutTimer";
 import WarmupTimer from "./WarmupTimer";
+import { countdownTick, playTimeUp, unlockAudio } from "./sounds";
 
 // TODO: option to hide ui
 interface PlayingGameProps {
@@ -149,6 +150,7 @@ export default function PlayingGame(props: PlayingGameProps) {
 
   const handleTimeout = (player: number) => {
     if (props.matchState.timeoutActive) return;
+    unlockAudio(); // called from a tap, so audio (incl. the time-up clip) is armed
 
     props.setMatchState((state) => ({
       ...state,
@@ -161,23 +163,23 @@ export default function PlayingGame(props: PlayingGameProps) {
       },
     }));
 
-    // Start timeout countdown
+    // Start timeout countdown: pip each of the last 10s, "time's up" clip at 0.
     const interval = setInterval(() => {
-      props.setMatchState((state) => {
-        if (state.timeoutRemaining <= 1) {
-          clearInterval(interval);
-          return {
-            ...state,
-            timeoutActive: false,
-            timeoutRemaining: 0,
-            timeoutPlayer: 0,
-          };
-        }
-        return {
+      const next = props.matchState.timeoutRemaining - 1;
+      if (next <= 0) {
+        clearInterval(interval);
+        setTimeoutInterval(null);
+        props.setMatchState((state) => ({
           ...state,
-          timeoutRemaining: state.timeoutRemaining - 1,
-        };
-      });
+          timeoutActive: false,
+          timeoutRemaining: 0,
+          timeoutPlayer: 0,
+        }));
+        playTimeUp();
+        return;
+      }
+      props.setMatchState((state) => ({ ...state, timeoutRemaining: next }));
+      if (next <= 10) countdownTick(next);
     }, 1000);
 
     setTimeoutInterval(interval);
@@ -221,24 +223,29 @@ export default function PlayingGame(props: PlayingGameProps) {
   // Pre-match warm-up countdown (shown at the start of a match/fixture).
   const startWarmup = () => {
     if (props.matchState.warmupActive) return;
+    unlockAudio(); // called from a tap, so audio (incl. the time-up clip) is armed
     props.setMatchState((state) => ({
       ...state,
       warmupActive: true,
       warmupRemaining: props.config.warmupDuration,
     }));
+    // Pip each of the last 10s, "time's up" clip when the warm-up ends.
     const interval = setInterval(() => {
-      props.setMatchState((state) => {
-        if (state.warmupRemaining <= 1) {
-          clearInterval(interval);
-          return {
-            ...state,
-            warmupActive: false,
-            warmupAvailable: false,
-            warmupRemaining: 0,
-          };
-        }
-        return { ...state, warmupRemaining: state.warmupRemaining - 1 };
-      });
+      const next = props.matchState.warmupRemaining - 1;
+      if (next <= 0) {
+        clearInterval(interval);
+        setWarmupInterval(null);
+        props.setMatchState((state) => ({
+          ...state,
+          warmupActive: false,
+          warmupAvailable: false,
+          warmupRemaining: 0,
+        }));
+        playTimeUp();
+        return;
+      }
+      props.setMatchState((state) => ({ ...state, warmupRemaining: next }));
+      if (next <= 10) countdownTick(next);
     }, 1000);
     setWarmupInterval(interval);
   };

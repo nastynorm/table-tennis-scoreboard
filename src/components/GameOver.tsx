@@ -2,7 +2,7 @@ import { onCleanup, onMount } from "solid-js";
 import type { SetStoreFunction } from "solid-js/store";
 import type { GameConfig, MatchState } from "./common";
 import WaterBreakTimer from "./WaterBreakTimer";
-import { buzzer, countdownTick, unlockAudio } from "./sounds";
+import { countdownTick, playTimeUp, unlockAudio } from "./sounds";
 
 interface GameOverProps {
   matchState: MatchState;
@@ -45,7 +45,7 @@ export default function GameOver(props: GameOverProps) {
           waterBreakActive: false,
           waterBreakRemaining: 0,
         }));
-        buzzer();
+        playTimeUp();
         props.newGame();
         return;
       }

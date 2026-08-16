@@ -68,6 +68,7 @@ export default function Setup(props: SetupProps) {
 
     const switchSides = data.get("switchSides") === "on";
     const showServer = data.get("showServer") === "on";
+    const soundEnabled = data.get("soundEnabled") === "on";
 
     // Only touch global keys — leave matchType / matchLength / doubles (per-match)
     // and player/team names alone.
@@ -77,6 +78,7 @@ export default function Setup(props: SetupProps) {
     props.setConfig("breakDuration", breakDuration);
     props.setConfig("switchSides", switchSides);
     props.setConfig("showServer", showServer);
+    props.setConfig("soundEnabled", soundEnabled);
     props.setConfig("player1Key", player1Key());
     props.setConfig("player2Key", player2Key());
     props.setConfig("scoreCorrectionKey", scoreCorrectionKey());
@@ -94,6 +96,7 @@ export default function Setup(props: SetupProps) {
           breakDuration,
           switchSides,
           showServer,
+          soundEnabled,
           player1Key: player1Key(),
           player2Key: player2Key(),
           scoreCorrectionKey: scoreCorrectionKey(),
@@ -168,6 +171,10 @@ export default function Setup(props: SetupProps) {
         <label for="showServer" class="flex gap-4 items-center text-lg font-normal tracking-wider font-sports">
           <input type="checkbox" id="showServer" name="showServer" class="w-5 h-5 border-2 border-black" data-testid="show-server-input" checked={props.config.showServer} />
           <span>Show serve indicator</span>
+        </label>
+        <label for="soundEnabled" class="flex gap-4 items-center text-lg font-normal tracking-wider font-sports">
+          <input type="checkbox" id="soundEnabled" name="soundEnabled" class="w-5 h-5 border-2 border-black" data-testid="sound-enabled-input" checked={props.config.soundEnabled} />
+          <span>Sounds (timer countdown &amp; buzzer)</span>
         </label>
       </section>
 

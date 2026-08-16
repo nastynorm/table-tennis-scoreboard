@@ -221,6 +221,22 @@ test.describe("setup mode", () => {
     await expect(page.getByTestId("right-name")).toContainText("Player 2");
   });
 
+  test("sounds toggle is on by default and persists when turned off", async ({
+    page,
+  }) => {
+    await page.getByTestId("menu-button").click();
+    await page.getByTestId("setup-button").click();
+    // Defaults to enabled.
+    await expect(page.getByTestId("sound-enabled-input")).toBeChecked();
+    await page.getByTestId("sound-enabled-input").uncheck();
+    await page.getByTestId("setup-done-button").click();
+
+    // Re-open Setup: the toggle stays off.
+    await page.getByTestId("menu-button").click();
+    await page.getByTestId("setup-button").click();
+    await expect(page.getByTestId("sound-enabled-input")).not.toBeChecked();
+  });
+
   test("can change player 1 instant correction keybind", async ({ page }) => {
     await page.getByTestId("menu-button").click();
     await page.getByTestId("setup-button").click();

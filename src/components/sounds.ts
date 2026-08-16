@@ -4,6 +4,13 @@
 
 let audioCtx: AudioContext | null = null;
 
+// Global on/off switch, driven by the Settings "Sounds" toggle. When off, every
+// sound-emitting function below is a no-op.
+let soundEnabled = true;
+export function setSoundEnabled(on: boolean) {
+  soundEnabled = on;
+}
+
 function ctx(): AudioContext | null {
   if (typeof window === "undefined") return null;
   const AC =
@@ -14,10 +21,55 @@ function ctx(): AudioContext | null {
 }
 
 // Browsers start the audio context "suspended" until a user gesture. Call this
-// from inside a click/keyup handler (e.g. when the break starts) to unlock it.
+// from inside a click/keyup handler (e.g. when a timer starts) to unlock it.
+// It also kicks off loading the "time's up" clip so it's ready at expiry.
 export function unlockAudio() {
   const ac = ctx();
   if (ac && ac.state === "suspended") ac.resume().catch(() => {});
+  preloadTimeUp();
+}
+
+// "Time's up" clip (time.mp3, bundled in /public). Decoded once into the
+// unlocked audio context so it plays reliably at the end of a timer — long
+// after the user gesture that started it — with no autoplay issues.
+const TIME_UP_URL = `${import.meta.env.BASE_URL}time.mp3`;
+let timeBuffer: AudioBuffer | null = null;
+let timeLoading: Promise<void> | null = null;
+
+export function preloadTimeUp() {
+  const ac = ctx();
+  if (!ac || timeBuffer || timeLoading) return;
+  timeLoading = fetch(TIME_UP_URL)
+    .then((r) => r.arrayBuffer())
+    .then((buf) => ac.decodeAudioData(buf))
+    .then((decoded) => {
+      timeBuffer = decoded;
+    })
+    .catch(() => {
+      /* leave timeBuffer null — playTimeUp() falls back to the buzzer */
+    });
+}
+
+// Play the "time's up" clip. Uses the decoded buffer when ready; otherwise
+// tries a plain HTML5 Audio element, and finally the synthesized buzzer, so
+// something always sounds even offline or before the clip has decoded.
+export function playTimeUp() {
+  if (!soundEnabled) return;
+  const ac = ctx();
+  if (ac && timeBuffer) {
+    const src = ac.createBufferSource();
+    src.buffer = timeBuffer;
+    src.connect(ac.destination);
+    src.start();
+    return;
+  }
+  try {
+    const el = new Audio(TIME_UP_URL);
+    const p = el.play();
+    if (p && typeof p.catch === "function") p.catch(() => buzzer());
+  } catch {
+    buzzer();
+  }
 }
 
 type BeepOpts = {
@@ -49,6 +101,7 @@ function beep(freq: number, dur: number, opts: BeepOpts = {}) {
 // One countdown "pip" for the final seconds. The last three seconds get a
 // higher, more urgent pitch.
 export function countdownTick(secondsLeft: number) {
+  if (!soundEnabled) return;
   const urgent = secondsLeft <= 3;
   beep(urgent ? 1046.5 : 784, urgent ? 0.16 : 0.12, {
     type: "triangle",
@@ -58,6 +111,7 @@ export function countdownTick(secondsLeft: number) {
 
 // Loud "time's up" buzzer — a harsh, low two-tone blast.
 export function buzzer() {
+  if (!soundEnabled) return;
   beep(196, 0.6, { type: "sawtooth", vol: 0.5 });
   beep(146.83, 0.7, { type: "sawtooth", vol: 0.5, delay: 0.05 });
 }

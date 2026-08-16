@@ -46,6 +46,9 @@ export type GameConfig = {
   doubles: boolean;
   // Show the serving indicator (ball) and rotate it automatically.
   showServer: boolean;
+  // Play timer sounds (countdown pips + the time's-up clip). When off, the app
+  // is silent.
+  soundEnabled: boolean;
   // Which competition format is being scored.
   matchType: MatchType;
 };
@@ -179,6 +182,7 @@ export const defaultGameConfig: GameConfig = {
   warmupDuration: 120, // 2 minute pre-match warm-up
   doubles: false,
   showServer: true,
+  soundEnabled: true,
   matchType: "singles",
 };
 
